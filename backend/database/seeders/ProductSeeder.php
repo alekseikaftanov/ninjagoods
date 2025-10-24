@@ -16,7 +16,7 @@ class ProductSeeder extends Seeder
         $products = [
             [
                 'name' => 'Микрозелень салата Айсберг',
-                'photo_url' => 'https://via.placeholder.com/300x200/90EE90/000000?text=Микрозелень+Айсберг',
+                'photo_url' => 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=400&fit=crop&crop=center',
                 'description' => 'Нежная микрозелень салата Айсберг с хрустящими листочками. Богата витаминами A, C и K.',
                 'unit' => 'штуки',
                 'price' => 150.00,
@@ -25,7 +25,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Микрозелень шпината',
-                'photo_url' => 'https://via.placeholder.com/300x200/228B22/FFFFFF?text=Микрозелень+Шпинат',
+                'photo_url' => 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&h=400&fit=crop&crop=center',
                 'description' => 'Питательная микрозелень шпината с высоким содержанием железа и фолиевой кислоты.',
                 'unit' => 'штуки',
                 'price' => 180.00,
@@ -34,7 +34,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Микрозелень редиса',
-                'photo_url' => 'https://via.placeholder.com/300x200/FF6347/FFFFFF?text=Микрозелень+Редис',
+                'photo_url' => 'https://images.unsplash.com/photo-1592924357228-91f4c0c0b8cc?w=400&h=400&fit=crop&crop=center',
                 'description' => 'Острая микрозелень редиса с пикантным вкусом. Отлично подходит для салатов и сэндвичей.',
                 'unit' => 'штуки',
                 'price' => 120.00,
@@ -43,7 +43,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Микрозелень базилика',
-                'photo_url' => 'https://via.placeholder.com/300x200/32CD32/FFFFFF?text=Микрозелень+Базилик',
+                'photo_url' => 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400&h=400&fit=crop&crop=center',
                 'description' => 'Ароматная микрозелень базилика с интенсивным вкусом. Идеальна для итальянских блюд.',
                 'unit' => 'штуки',
                 'price' => 200.00,
@@ -52,12 +52,21 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Микрозелень кориандра',
-                'photo_url' => 'https://via.placeholder.com/300x200/9ACD32/FFFFFF?text=Микрозелень+Кориандр',
+                'photo_url' => 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400&h=400&fit=crop&crop=center',
                 'description' => 'Свежая микрозелень кориандра с цитрусовым ароматом. Отлично дополняет азиатские блюда.',
                 'unit' => 'штуки',
                 'price' => 160.00,
                 'min_order' => 1.00,
                 'category_id' => 3, // Травы
+            ],
+            [
+                'name' => 'Бананы',
+                'photo_url' => 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=400&fit=crop&crop=center',
+                'description' => 'Свежие спелые бананы с нежной мякотью. Богаты калием и витаминами.',
+                'unit' => 'килограммы',
+                'price' => 80.00,
+                'min_order' => 0.5,
+                'category_id' => 1, // Листовая зелень (временно)
             ],
         ];
 
