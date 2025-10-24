@@ -1,24 +1,8 @@
 <template>
   <div class="home">
-    <!-- Hero Section -->
-    <div class="hero">
-      <div class="hero-content">
-        <div class="hero-icon">🌱</div>
-        <h1>Ninja Goods</h1>
-        <p class="hero-subtitle">Свежая микрозелень<br>прямо к вашему столу</p>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-      <router-link to="/categories" class="action-card primary">
-        <div class="action-icon">📁</div>
-        <div class="action-content">
-          <h3>Каталог товаров</h3>
-          <p>Выберите свежую микрозелень</p>
-        </div>
-        <div class="action-arrow">›</div>
-      </router-link>
+    <!-- Simple Header -->
+    <div class="simple-header">
+      <h1>Выберите товар</h1>
     </div>
 
     <!-- Loading State -->
@@ -40,55 +24,28 @@
     <div v-else class="content">
       <!-- All Products -->
       <div v-if="allProducts.length > 0" class="section">
-        <div class="section-header">
-          <h2>Все товары</h2>
-          <span class="products-count">{{ allProducts.length }} товаров</span>
-        </div>
-        <div class="products-grid-small">
+        <div class="products-grid">
           <div
             v-for="product in allProducts"
             :key="product.id"
-            class="product-card-small"
+            class="product-card"
           >
-            <div class="product-image-container-small">
-              <img :src="product.photo_url" :alt="product.name" class="product-image-small" />
+            <div class="product-image-container">
+              <img :src="product.photo_url" :alt="product.name" class="product-image" />
             </div>
-            <div class="product-info-small">
+            <div class="product-info">
               <div class="product-rating">
                 <span class="rating-star">⭐</span>
                 <span class="rating-value">4.9</span>
               </div>
               <h3 class="product-name">{{ product.name }}</h3>
-              <p class="product-price-small">{{ product.price }} ₽</p>
+              <p class="product-price">{{ product.price }} ₽</p>
               <button @click="addToCart(product)" class="btn-add-to-cart">
                 <span class="cart-icon">🛒</span>
                 <span class="cart-text">В корзину</span>
               </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Popular Categories -->
-      <div v-if="mainCategories.length > 0" class="section">
-        <div class="section-header">
-          <h2>Категории</h2>
-        </div>
-        <div class="categories-grid">
-          <router-link
-            v-for="category in mainCategories.slice(0, 6)"
-            :key="category.id"
-            :to="`/products/${category.id}`"
-            class="category-card"
-          >
-            <div class="category-image">
-              <div class="category-icon">🌿</div>
-            </div>
-            <div class="category-info">
-              <h3>{{ category.name }}</h3>
-              <p>{{ category.products?.length || 0 }} товаров</p>
-            </div>
-          </router-link>
         </div>
       </div>
     </div>
@@ -133,110 +90,19 @@ onMounted(() => {
   padding-bottom: 80px; /* Space for floating cart */
 }
 
-/* Hero Section */
-.hero {
-  background: linear-gradient(135deg, var(--accent-green) 0%, #2ECC71 100%);
-  color: white;
-  padding: var(--spacing-xl) var(--spacing-md);
+/* Simple Header */
+.simple-header {
+  padding: var(--spacing-xl) var(--spacing-md) var(--spacing-lg);
   text-align: center;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  margin: 0 calc(-1 * var(--spacing-md)) var(--spacing-xl);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.hero-content {
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.hero-icon {
-  font-size: 48px;
-  margin-bottom: var(--spacing-md);
-}
-
-.hero h1 {
+.simple-header h1 {
   font-size: var(--font-size-large);
-  font-weight: 700;
-  margin-bottom: var(--spacing-sm);
-  color: white;
-}
-
-.hero-subtitle {
-  font-size: var(--font-size-regular);
-  opacity: 0.9;
-  line-height: 1.4;
-  margin: 0;
-}
-
-/* Quick Actions */
-.quick-actions {
-  margin-bottom: var(--spacing-xl);
-}
-
-.action-card {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-lg);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--spacing-md);
-  text-decoration: none;
-  color: inherit;
-  border: 1px solid var(--border-color);
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.action-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.action-card.primary {
-  background: linear-gradient(135deg, var(--accent-blue) 0%, #0056CC 100%);
-  color: white;
-}
-
-.action-card.secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.action-icon {
-  font-size: 24px;
-  margin-right: var(--spacing-md);
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-}
-
-.action-card.secondary .action-icon {
-  background: var(--accent-blue-light);
-}
-
-.action-content {
-  flex: 1;
-}
-
-.action-content h3 {
-  font-size: var(--font-size-regular);
   font-weight: 600;
-  margin: 0 0 var(--spacing-xs) 0;
-}
-
-.action-content p {
-  font-size: var(--font-size-small);
-  opacity: 0.8;
   margin: 0;
-}
-
-.action-arrow {
-  font-size: 20px;
-  font-weight: 300;
-  opacity: 0.6;
+  color: var(--text-primary);
 }
 
 /* Loading & Error States */
@@ -266,163 +132,90 @@ onMounted(() => {
 }
 
 /* Content Sections */
+.content {
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
 .section {
   margin-bottom: var(--spacing-xl);
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.section-header h2 {
-  font-size: var(--font-size-medium);
-  font-weight: 600;
-  margin: 0;
-}
-
-.section-link {
-  color: var(--accent-blue);
-  text-decoration: none;
-  font-size: var(--font-size-small);
-  font-weight: 500;
-}
-
-.section-link:hover {
-  opacity: 0.8;
-}
-
-/* Categories Grid */
-.categories-grid {
+/* Products Grid - 4 per row with increased spacing */
+.products-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md) 0;
 }
 
-.category-card {
+.product-card {
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  text-decoration: none;
-  color: inherit;
-  border: 1px solid var(--border-color);
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.category-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.category-image {
-  text-align: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.category-icon {
-  font-size: 32px;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-green);
-  border-radius: var(--radius-md);
-  margin: 0 auto;
-}
-
-.category-info h3 {
-  font-size: var(--font-size-small);
-  font-weight: 600;
-  margin: 0 0 var(--spacing-xs) 0;
-  text-align: center;
-}
-
-.category-info p {
-  font-size: var(--font-size-caption);
-  color: var(--text-secondary);
-  margin: 0;
-  text-align: center;
-}
-
-/* Products Grid Small - 5 per row */
-.products-grid-small {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: var(--spacing-sm);
-}
-
-.product-card-small {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
   border: 1px solid var(--border-color);
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   position: relative;
 }
 
-.product-card-small:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.product-image-container-small {
+.product-image-container {
   aspect-ratio: 1;
   overflow: hidden;
   background: var(--bg-tertiary);
 }
 
-.product-image-small {
+.product-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
-.product-card-small:hover .product-image-small {
+.product-card:hover .product-image {
   transform: scale(1.05);
 }
 
-.product-info-small {
-  padding: var(--spacing-sm);
+.product-info {
+  padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-sm);
 }
 
 .product-rating {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   background: white;
-  padding: 2px 6px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
   width: fit-content;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .rating-star {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .rating-value {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .product-name {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.3;
   text-align: left;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -432,15 +225,15 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.product-price-small {
-  font-size: 13px;
+.product-price {
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
   text-align: left;
   background: var(--bg-tertiary);
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
   width: fit-content;
 }
 
@@ -450,23 +243,23 @@ onMounted(() => {
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  padding: var(--spacing-md) var(--spacing-sm);
-  font-size: 12px;
+  padding: var(--spacing-md);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-sm);
   margin-top: auto;
-  min-height: 40px;
+  min-height: 48px;
 }
 
 .btn-add-to-cart:hover {
   background: #2ECC71;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3);
 }
 
 .btn-add-to-cart:active {
@@ -474,63 +267,69 @@ onMounted(() => {
 }
 
 .cart-icon {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .cart-text {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-}
-
-.products-count {
-  font-size: var(--font-size-small);
-  color: var(--text-secondary);
-  font-weight: 500;
 }
 
 /* Responsive */
 @media (max-width: 1200px) {
-  .products-grid-small {
-    grid-template-columns: repeat(4, 1fr);
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
   }
 }
 
 @media (max-width: 900px) {
-  .products-grid-small {
-    grid-template-columns: repeat(3, 1fr);
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
   }
 }
 
 @media (max-width: 600px) {
-  .products-grid-small {
+  .products-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+  }
+  
+  .simple-header {
+    padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+  }
+  
+  .simple-header h1 {
+    font-size: var(--font-size-medium);
+  }
+  
+  .content {
+    padding: var(--spacing-md);
   }
 }
 
 @media (max-width: 480px) {
-  .categories-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .hero {
-    padding: var(--spacing-lg) var(--spacing-md);
-  }
-  
-  .hero-icon {
-    font-size: 40px;
-  }
-  
-  .products-grid-small {
+  .products-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-xs);
   }
   
-  .product-info-small h3 {
-    font-size: 10px;
+  .product-info {
+    padding: var(--spacing-sm);
   }
   
-  .product-price-small {
-    font-size: 11px;
+  .product-name {
+    font-size: 12px;
+  }
+  
+  .product-price {
+    font-size: 14px;
+  }
+  
+  .btn-add-to-cart {
+    font-size: 12px;
+    min-height: 40px;
   }
 }
 </style>
