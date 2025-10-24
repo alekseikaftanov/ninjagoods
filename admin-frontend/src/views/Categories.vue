@@ -7,6 +7,13 @@
           + Добавить категорию
         </button>
       </div>
+
+      <!-- Сортировка -->
+      <SortControls 
+        @sort-change="handleSortChange"
+        :default-sort-by="sortBy"
+        :default-sort-order="sortOrder"
+      />
       
       <div class="card">
         <table class="table">
@@ -82,6 +89,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/AdminLayout.vue'
+import SortControls from '../components/SortControls.vue'
 import axios from 'axios'
 
 interface Category {
@@ -95,6 +103,8 @@ interface Category {
 const categories = ref<Category[]>([])
 const showCreateForm = ref(false)
 const editingCategory = ref<Category | null>(null)
+const sortBy = ref('id')
+const sortOrder = ref('asc')
 const loading = ref(false)
 
 const form = ref({
@@ -104,11 +114,22 @@ const form = ref({
 
 const loadCategories = async () => {
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/categories')
+    const response = await axios.get('http://localhost:8001/api/admin/categories', {
+      params: {
+        sort_by: sortBy.value,
+        sort_order: sortOrder.value
+      }
+    })
     categories.value = response.data.data
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error)
   }
+}
+
+const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+  sortBy.value = newSortBy
+  sortOrder.value = newSortOrder
+  loadCategories()
 }
 
 const saveCategory = async () => {

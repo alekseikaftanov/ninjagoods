@@ -4,7 +4,7 @@
       <div class="page-header">
         <h1>Товары</h1>
         <div class="header-actions">
-          <button @click="showCsvManager = !showCsvManager" class="btn btn-secondary">
+          <button @click="toggleCsvManager" class="btn btn-secondary">
             📊 CSV операции
           </button>
           <button @click="showCreateForm = true" class="btn btn-primary">
@@ -12,6 +12,14 @@
           </button>
         </div>
       </div>
+
+      <!-- Сортировка -->
+      <SortControls 
+        @sort-change="handleSortChange"
+        :default-sort-by="sortBy"
+        :default-sort-order="sortOrder"
+        :show-price-sort="true"
+      />
 
       <!-- CSV Manager -->
       <div v-if="showCsvManager" class="csv-section">
@@ -157,6 +165,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/AdminLayout.vue'
 import CsvManager from '../components/CsvManager.vue'
+import SortControls from '../components/SortControls.vue'
 import axios from 'axios'
 
 interface Product {
@@ -181,6 +190,8 @@ const categories = ref<Category[]>([])
 const showCreateForm = ref(false)
 const editingProduct = ref<Product | null>(null)
 const showCsvManager = ref(false)
+const sortBy = ref('id')
+const sortOrder = ref('asc')
 const loading = ref(false)
 
 const form = ref({
@@ -195,11 +206,28 @@ const form = ref({
 
 const loadProducts = async () => {
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/products')
+    const response = await axios.get('http://localhost:8001/api/admin/products', {
+      params: {
+        sort_by: sortBy.value,
+        sort_order: sortOrder.value
+      }
+    })
     products.value = response.data.data
   } catch (error) {
     console.error('Ошибка загрузки товаров:', error)
   }
+}
+
+const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+  sortBy.value = newSortBy
+  sortOrder.value = newSortOrder
+  loadProducts()
+}
+
+const toggleCsvManager = () => {
+  console.log('CSV Manager toggle clicked, current state:', showCsvManager.value)
+  showCsvManager.value = !showCsvManager.value
+  console.log('CSV Manager new state:', showCsvManager.value)
 }
 
 const loadCategories = async () => {
@@ -292,6 +320,8 @@ onMounted(() => {
 .header-actions {
   display: flex;
   gap: var(--spacing-md);
+  position: relative;
+  z-index: 10;
 }
 
 .csv-section {
@@ -315,7 +345,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .modal {
@@ -344,6 +374,9 @@ onMounted(() => {
 
 .btn {
   margin: 0 var(--spacing-xs);
+  position: relative;
+  z-index: 5;
+  cursor: pointer;
 }
 
 textarea.form-input {

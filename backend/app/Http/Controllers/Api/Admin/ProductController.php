@@ -12,9 +12,19 @@ class ProductController extends Controller
     /**
      * Получить список товаров
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $products = Product::with('category')->get();
+        $sortBy = $request->get('sort_by', 'id'); // id или created_at
+        $sortOrder = $request->get('sort_order', 'asc'); // asc или desc
+        
+        $validSortFields = ['id', 'created_at', 'name', 'price'];
+        if (!in_array($sortBy, $validSortFields)) {
+            $sortBy = 'id';
+        }
+        
+        $products = Product::with('category')
+            ->orderBy($sortBy, $sortOrder)
+            ->get();
 
         return response()->json([
             'success' => true,

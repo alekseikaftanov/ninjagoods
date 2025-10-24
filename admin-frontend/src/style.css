@@ -51,26 +51,7 @@ body {
   display: flex;
 }
 
-/* Layout */
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-  width: 100%;
-}
-
-.sidebar {
-  width: 280px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  border-right: 1px solid var(--border-color);
-  padding: var(--spacing-xl);
-}
-
-.main-content {
-  flex: 1;
-  padding: var(--spacing-xl);
-  max-width: 1280px;
-}
+/* Layout - основные стили перенесены в AdminLayout.vue */
 
 /* Typography */
 h1 {

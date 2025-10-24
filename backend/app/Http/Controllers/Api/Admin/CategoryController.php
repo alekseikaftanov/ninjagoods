@@ -12,9 +12,19 @@ class CategoryController extends Controller
     /**
      * Получить список категорий
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $categories = Category::with(['parent', 'children', 'products'])->get();
+        $sortBy = $request->get('sort_by', 'id'); // id или created_at
+        $sortOrder = $request->get('sort_order', 'asc'); // asc или desc
+        
+        $validSortFields = ['id', 'created_at', 'name'];
+        if (!in_array($sortBy, $validSortFields)) {
+            $sortBy = 'id';
+        }
+        
+        $categories = Category::with(['parent', 'children', 'products'])
+            ->orderBy($sortBy, $sortOrder)
+            ->get();
 
         return response()->json([
             'success' => true,
