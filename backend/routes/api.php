@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\Admin\ProductCsvController as AdminProductCsvController;
 use App\Http\Controllers\Api\Admin\LogController as AdminLogController;
 
 // Публичные API маршруты
@@ -32,6 +33,11 @@ Route::prefix('admin')->group(function () {
     Route::post('/products', [AdminProductController::class, 'store']);
     Route::put('/products/{product}', [AdminProductController::class, 'update']);
     Route::delete('/products/{product}', [AdminProductController::class, 'destroy']);
+    
+    // CSV операции с товарами
+    Route::get('/products/csv/export', [AdminProductCsvController::class, 'export']);
+    Route::post('/products/csv/import', [AdminProductCsvController::class, 'import']);
+    Route::get('/products/csv/template', [AdminProductCsvController::class, 'getTemplate']);
     
     // Логи
     Route::get('/logs', [AdminLogController::class, 'index']);

@@ -3,9 +3,19 @@
     <div class="products">
       <div class="page-header">
         <h1>Товары</h1>
-        <button @click="showCreateForm = true" class="btn btn-primary">
-          + Добавить товар
-        </button>
+        <div class="header-actions">
+          <button @click="showCsvManager = !showCsvManager" class="btn btn-secondary">
+            📊 CSV операции
+          </button>
+          <button @click="showCreateForm = true" class="btn btn-primary">
+            + Добавить товар
+          </button>
+        </div>
+      </div>
+
+      <!-- CSV Manager -->
+      <div v-if="showCsvManager" class="csv-section">
+        <CsvManager @import-completed="loadProducts" />
       </div>
       
       <div class="card">
@@ -146,6 +156,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/AdminLayout.vue'
+import CsvManager from '../components/CsvManager.vue'
 import axios from 'axios'
 
 interface Product {
@@ -169,6 +180,7 @@ const products = ref<Product[]>([])
 const categories = ref<Category[]>([])
 const showCreateForm = ref(false)
 const editingProduct = ref<Product | null>(null)
+const showCsvManager = ref(false)
 const loading = ref(false)
 
 const form = ref({
@@ -275,6 +287,15 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-xl);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.csv-section {
+  margin-bottom: var(--spacing-lg);
 }
 
 .product-image {
