@@ -21,7 +21,7 @@ class ProductSeeder extends Seeder
                 'unit' => 'штуки',
                 'price' => 150.00,
                 'min_order' => 1.00,
-                'category_id' => 4, // Салаты
+                'category_id' => 1, // Листовая зелень
             ],
             [
                 'name' => 'Микрозелень шпината',
@@ -30,7 +30,7 @@ class ProductSeeder extends Seeder
                 'unit' => 'штуки',
                 'price' => 180.00,
                 'min_order' => 1.00,
-                'category_id' => 5, // Шпинат
+                'category_id' => 1, // Листовая зелень
             ],
             [
                 'name' => 'Микрозелень редиса',
@@ -39,7 +39,7 @@ class ProductSeeder extends Seeder
                 'unit' => 'штуки',
                 'price' => 120.00,
                 'min_order' => 1.00,
-                'category_id' => 6, // Редис
+                'category_id' => 2, // Корнеплоды
             ],
             [
                 'name' => 'Микрозелень базилика',
@@ -48,7 +48,7 @@ class ProductSeeder extends Seeder
                 'unit' => 'штуки',
                 'price' => 200.00,
                 'min_order' => 1.00,
-                'category_id' => 7, // Базилик
+                'category_id' => 3, // Травы
             ],
             [
                 'name' => 'Микрозелень кориандра',
@@ -57,7 +57,7 @@ class ProductSeeder extends Seeder
                 'unit' => 'штуки',
                 'price' => 160.00,
                 'min_order' => 1.00,
-                'category_id' => 8, // Кориандр
+                'category_id' => 3, // Травы
             ],
         ];
 
