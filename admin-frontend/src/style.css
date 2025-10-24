@@ -224,6 +224,41 @@ p {
   animation: fadeIn 0.3s ease-out;
 }
 
+/* Clickable rows */
+.clickable-row {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable-row:hover {
+  background: var(--accent-blue-light) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.1);
+}
+
+/* Unified table widths */
+.table {
+  min-width: 800px;
+  table-layout: fixed;
+}
+
+.table th:nth-child(1), .table td:nth-child(1) { width: 8%; }  /* ID */
+.table th:nth-child(2), .table td:nth-child(2) { width: 15%; } /* Фото/Название */
+.table th:nth-child(3), .table td:nth-child(3) { width: 25%; } /* Название/Родительская категория */
+.table th:nth-child(4), .table td:nth-child(4) { width: 20%; } /* Категория/Товары */
+.table th:nth-child(5), .table td:nth-child(5) { width: 12%; } /* Цена */
+.table th:nth-child(6), .table td:nth-child(6) { width: 10%; } /* Единица */
+.table th:nth-child(7), .table td:nth-child(7) { width: 10%; } /* Действия */
+
+/* Product image styling */
+.product-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .admin-layout {
@@ -237,5 +272,9 @@ p {
   
   .main-content {
     padding: var(--spacing-md);
+  }
+  
+  .table {
+    min-width: 600px;
   }
 }

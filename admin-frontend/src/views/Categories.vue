@@ -27,16 +27,16 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="category in categories" :key="category.id">
+            <tr v-for="category in categories" :key="category.id" @click="editCategory(category)" class="clickable-row">
               <td>{{ category.id }}</td>
               <td>{{ category.name }}</td>
               <td>{{ category.parent?.name || '-' }}</td>
               <td>{{ category.products?.length || 0 }}</td>
               <td>
-                <button @click="editCategory(category)" class="btn btn-secondary">
+                <button @click.stop="editCategory(category)" class="btn btn-secondary">
                   ✏️
                 </button>
-                <button @click="deleteCategory(category.id)" class="btn btn-secondary">
+                <button @click.stop="deleteCategory(category.id)" class="btn btn-secondary">
                   🗑️
                 </button>
               </td>
@@ -157,11 +157,12 @@ const saveCategory = async () => {
 }
 
 const editCategory = (category: Category) => {
-  editingCategory.value = category
+  editingCategory.value = { ...category }
   form.value = {
     name: category.name,
     parent_id: category.parent_id?.toString() || ''
   }
+  showCreateForm.value = true
 }
 
 const deleteCategory = async (id: number) => {

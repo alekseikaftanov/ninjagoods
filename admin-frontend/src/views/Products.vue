@@ -36,12 +36,11 @@
               <th>Категория</th>
               <th>Цена</th>
               <th>Единица</th>
-              <th>Мин. заказ</th>
               <th>Действия</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="product in products" :key="product.id">
+            <tr v-for="product in products" :key="product.id" @click="editProduct(product)" class="clickable-row">
               <td>{{ product.id }}</td>
               <td>
                 <img :src="product.photo_url" :alt="product.name" class="product-image" />
@@ -50,12 +49,11 @@
               <td>{{ product.category?.name || '-' }}</td>
               <td>{{ product.price }} ₽</td>
               <td>{{ product.unit }}</td>
-              <td>{{ product.min_order }}</td>
               <td>
-                <button @click="editProduct(product)" class="btn btn-secondary">
+                <button @click.stop="editProduct(product)" class="btn btn-secondary">
                   ✏️
                 </button>
-                <button @click="deleteProduct(product.id)" class="btn btn-secondary">
+                <button @click.stop="deleteProduct(product.id)" class="btn btn-secondary">
                   🗑️
                 </button>
               </td>
