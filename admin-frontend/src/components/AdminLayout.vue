@@ -14,9 +14,12 @@
           <router-link to="/categories" class="nav-item" :class="{ active: $route.path === '/categories' }">
             📁 Категории
           </router-link>
-          <router-link to="/products" class="nav-item" :class="{ active: $route.path === '/products' }">
-            🛍️ Товары
-          </router-link>
+              <router-link to="/products" class="nav-item" :class="{ active: $route.path === '/products' }">
+                🛍️ Товары
+              </router-link>
+              <router-link to="/orders" class="nav-item" :class="{ active: $route.path === '/orders' }">
+                📦 Заказы
+              </router-link>
         </nav>
       </div>
       

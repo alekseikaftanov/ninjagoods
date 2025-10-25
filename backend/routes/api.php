@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ProductCsvController as AdminProductCsvController;
 use App\Http\Controllers\Api\Admin\LogController as AdminLogController;
+use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
 
 // Публичные API маршруты
 Route::post('/auth/telegram', [AuthController::class, 'telegram']);
@@ -39,8 +40,13 @@ Route::prefix('admin')->group(function () {
     Route::post('/products/csv/import', [AdminProductCsvController::class, 'import']);
     Route::get('/products/csv/template', [AdminProductCsvController::class, 'getTemplate']);
     
-    // Логи
-    Route::get('/logs', [AdminLogController::class, 'index']);
-    Route::delete('/logs', [AdminLogController::class, 'clear']);
-    Route::get('/logs/download', [AdminLogController::class, 'download']);
+        // Логи
+        Route::get('/logs', [AdminLogController::class, 'index']);
+        Route::delete('/logs', [AdminLogController::class, 'clear']);
+        Route::get('/logs/download', [AdminLogController::class, 'download']);
+        
+        // Заказы
+        Route::get('/orders', [AdminOrderController::class, 'index']);
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
+        Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy']);
 });

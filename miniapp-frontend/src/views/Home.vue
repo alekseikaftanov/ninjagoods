@@ -7,15 +7,6 @@
           <span class="logo-icon">🌱</span>
           <span class="logo-text">Ninja Goods</span>
         </div>
-        <nav class="nav-menu">
-          <a href="#" class="nav-link">Продукты</a>
-          <a href="#" class="nav-link">О нас</a>
-          <a href="#" class="nav-link">Контакты</a>
-        </nav>
-        <div class="cart-button" @click="toggleCart">
-          <span class="cart-icon">🛒</span>
-          <span v-if="cartStore.totalItems > 0" class="cart-count">{{ cartStore.totalItems }}</span>
-        </div>
       </div>
     </header>
 
@@ -66,9 +57,15 @@
               <div class="product-price-container">
                 <span class="product-price">{{ product.price }} ₽</span>
               </div>
-              <button class="btn-add-to-cart">
+              <!-- Кнопка добавления или управления количеством -->
+              <div v-if="!cartStore.isInCart(product.id)" class="btn-add-to-cart" @click="addToCart(product)">
                 Добавить
-              </button>
+              </div>
+              <div v-else class="quantity-controls">
+                <button @click="decreaseQuantity(product)" class="btn-quantity minus">-</button>
+                <span class="quantity-display">{{ Math.round(cartStore.getQuantity(product.id)) }}</span>
+                <button @click="increaseQuantity(product)" class="btn-quantity plus">+</button>
+              </div>
             </div>
           </div>
         </div>
@@ -105,7 +102,6 @@ import type { Product } from '../types'
 const catalogStore = useCatalogStore()
 const cartStore = useCartStore()
 
-const mainCategories = computed(() => catalogStore.getMainCategories())
 const allProducts = computed(() => catalogStore.products)
 
 const loadData = async () => {
@@ -116,7 +112,10 @@ const loadData = async () => {
 }
 
 const addToCart = (product: Product) => {
-  cartStore.addItem(product)
+  // Добавляем минимальное количество товара (целое число)
+  const minOrder = Math.round(product.min_order)
+  cartStore.addItem(product, minOrder)
+  
   // Добавляем bounce эффект
   const button = event?.target as HTMLElement
   if (button) {
@@ -127,9 +126,24 @@ const addToCart = (product: Product) => {
   }
 }
 
-const toggleCart = () => {
-  // Логика для открытия корзины
-  console.log('Toggle cart')
+const increaseQuantity = (product: Product) => {
+  const currentQuantity = cartStore.getQuantity(product.id)
+  const minOrder = Math.round(product.min_order)
+  const newQuantity = currentQuantity + minOrder
+  cartStore.updateQuantity(product.id, newQuantity)
+}
+
+const decreaseQuantity = (product: Product) => {
+  const currentQuantity = cartStore.getQuantity(product.id)
+  const minOrder = Math.round(product.min_order)
+  const newQuantity = currentQuantity - minOrder
+  
+  if (newQuantity >= minOrder) {
+    cartStore.updateQuantity(product.id, newQuantity)
+  } else {
+    // Если количество станет меньше минимального, удаляем товар из корзины
+    cartStore.removeItem(product.id)
+  }
 }
 
 onMounted(() => {
@@ -163,7 +177,7 @@ onMounted(() => {
   padding: 0 60px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .logo {
@@ -265,7 +279,7 @@ onMounted(() => {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 32px;
 }
 
@@ -359,7 +373,7 @@ onMounted(() => {
 }
 
 .btn-add-to-cart {
-  background: #007AFF;
+  background: #34C759;
   color: white;
   border: none;
   border-radius: 12px;
@@ -372,13 +386,58 @@ onMounted(() => {
 }
 
 .btn-add-to-cart:hover {
-  background: #0056CC;
-  box-shadow: 0 0 12px rgba(0, 122, 255, 0.3);
+  background: #30B050;
+  box-shadow: 0 0 12px rgba(52, 199, 89, 0.3);
   transform: translateY(-1px);
 }
 
 .btn-add-to-cart:active {
   transform: scale(0.98);
+}
+
+/* Quantity Controls */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #34C759;
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-top: auto;
+}
+
+.btn-quantity {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-quantity:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-quantity:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.quantity-display {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  min-width: 24px;
+  text-align: center;
+  font-feature-settings: "tnum";
 }
 
 /* Empty State */
@@ -463,7 +522,7 @@ onMounted(() => {
   }
   
   .products-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
   }
 }
@@ -486,7 +545,7 @@ onMounted(() => {
   }
   
   .products-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
   

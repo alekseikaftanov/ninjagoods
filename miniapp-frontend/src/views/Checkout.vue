@@ -1,297 +1,389 @@
 <template>
-  <div class="checkout">
-    <div class="header">
-      <h1>📝 Оформление заказа</h1>
+  <div class="checkout-page">
+    <div class="checkout-header">
+      <button @click="goBack" class="back-btn">
+        <span>←</span>
+        Назад
+      </button>
+      <h1>Оформление заказа</h1>
     </div>
 
-    <div v-if="cartStore.items.length === 0" class="empty-cart">
-      <p>Корзина пуста</p>
-      <router-link to="/categories" class="btn btn-primary">
-        Перейти к каталогу
-      </router-link>
-    </div>
-
-    <div v-else class="checkout-content">
-      <!-- Информация о заказе -->
+    <div class="checkout-content">
+      <!-- Order Summary -->
       <div class="order-summary">
         <h2>Ваш заказ</h2>
         <div class="order-items">
-          <div
-            v-for="item in cartStore.items"
-            :key="item.product.id"
+          <div 
+            v-for="item in cartStore.items" 
+            :key="item.product.id" 
             class="order-item"
           >
+            <img :src="item.product.photo_url" :alt="item.product.name" class="item-image" />
             <div class="item-info">
-              <h4>{{ item.product.name }}</h4>
-              <p>{{ item.quantity }} × {{ item.product.price }} ₽</p>
+              <div class="item-name">{{ item.product.name }}</div>
+              <div class="item-details">
+                <span class="item-price">{{ item.product.price }} ₽</span>
+                <span class="item-quantity">× {{ item.quantity }}</span>
+              </div>
             </div>
-            <div class="item-total">
-              {{ (item.quantity * item.product.price).toFixed(2) }} ₽
-            </div>
+            <div class="item-total">{{ (item.product.price * item.quantity) }} ₽</div>
           </div>
         </div>
         
         <div class="order-total">
-          <div class="total-row">
+          <div class="total-line">
+            <span>Товаров:</span>
+            <span>{{ cartStore.totalItems }}</span>
+          </div>
+          <div class="total-line final">
             <span>Итого:</span>
-            <span>{{ cartStore.totalPrice.toFixed(2) }} ₽</span>
+            <span>{{ cartStore.totalPrice }} ₽</span>
           </div>
         </div>
       </div>
 
-      <!-- Форма заказа -->
-      <div class="order-form">
+      <!-- Contact Info -->
+      <div class="contact-info">
         <h2>Контактная информация</h2>
-        
         <div class="form-group">
-          <label class="form-label">Имя</label>
-          <input
-            v-model="orderForm.name"
-            type="text"
-            class="form-input"
-            placeholder="Ваше имя"
-            required
-          />
+          <label>Имя</label>
+          <input v-model="orderData.name" type="text" placeholder="Введите ваше имя" />
         </div>
-
         <div class="form-group">
-          <label class="form-label">Телефон</label>
-          <input
-            v-model="orderForm.phone"
-            type="tel"
-            class="form-input"
-            placeholder="+7 (999) 123-45-67"
-            required
-          />
+          <label>Телефон</label>
+          <input v-model="orderData.phone" type="tel" placeholder="+7 (999) 123-45-67" />
         </div>
-
         <div class="form-group">
-          <label class="form-label">Комментарий к заказу</label>
-          <textarea
-            v-model="orderForm.comment"
-            class="form-input"
-            rows="3"
-            placeholder="Дополнительные пожелания..."
-          ></textarea>
+          <label>Комментарий к заказу</label>
+          <textarea v-model="orderData.comment" placeholder="Дополнительные пожелания (необязательно)"></textarea>
         </div>
       </div>
 
-      <!-- Кнопки действий -->
-      <div class="checkout-actions">
-        <router-link to="/cart" class="btn btn-secondary">
-          Назад в корзину
-        </router-link>
-        <button
-          @click="submitOrder"
-          :disabled="!isFormValid || isSubmitting"
-          class="btn btn-primary"
-        >
-          <span v-if="isSubmitting">Обработка...</span>
-          <span v-else>Подтвердить заказ</span>
-        </button>
-      </div>
+      <!-- Submit Button -->
+      <button @click="submitOrder" class="submit-btn" :disabled="!canSubmit">
+        <span v-if="isSubmitting">Отправляем...</span>
+        <span v-else>Подтвердить заказ</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
-import { useAuthStore } from '../stores/auth'
-import { ordersAPI } from '../utils/api'
-import { hapticFeedback } from '../utils/telegram'
+import axios from 'axios'
 
 const router = useRouter()
 const cartStore = useCartStore()
-const authStore = useAuthStore()
 
-const isSubmitting = ref(false)
-
-const orderForm = ref({
+const orderData = ref({
   name: '',
   phone: '',
   comment: ''
 })
 
-const isFormValid = computed(() => {
-  return orderForm.value.name.trim() && orderForm.value.phone.trim()
+const isSubmitting = ref(false)
+
+const canSubmit = computed(() => {
+  return orderData.value.name.trim() && 
+         orderData.value.phone.trim() && 
+         cartStore.totalItems > 0
 })
 
+const goBack = () => {
+  router.back()
+}
+
 const submitOrder = async () => {
-  if (!isFormValid.value || !authStore.user) return
+  if (!canSubmit.value) return
 
   isSubmitting.value = true
 
   try {
-    const orderData = {
-      user_id: authStore.user.id,
-      items: cartStore.getOrderItems(),
-      comment: orderForm.value.comment || undefined
-    }
+    // Сначала создаем пользователя
+    const userResponse = await axios.post('http://localhost:8001/api/auth/telegram', {
+      telegram_id: `user_${Date.now()}`, // Временный ID для демо
+      name: orderData.value.name,
+      phone: orderData.value.phone
+    })
 
-    const order = await ordersAPI.create(orderData)
-    
-    hapticFeedback('success')
-    
+    const userId = userResponse.data.user.id
+
+    // Затем создаем заказ
+    const orderResponse = await axios.post('http://localhost:8001/api/orders', {
+      user_id: userId,
+      items: cartStore.getOrderItems(),
+      comment: orderData.value.comment
+    })
+
     // Очищаем корзину
     cartStore.clearCart()
-    
-    // Переходим на страницу успеха
-    router.push('/order-success')
-    
+
+    // Показываем успех и возвращаемся
+    alert('Заказ успешно оформлен! Номер заказа: #' + orderResponse.data.data.id)
+    router.push('/')
+
   } catch (error) {
-    console.error('Order submission error:', error)
-    hapticFeedback('error')
-    alert('Ошибка при оформлении заказа. Попробуйте снова.')
+    console.error('Ошибка при оформлении заказа:', error)
+    alert('Произошла ошибка при оформлении заказа. Попробуйте еще раз.')
   } finally {
     isSubmitting.value = false
   }
 }
-
-onMounted(() => {
-  // Заполняем форму данными пользователя
-  if (authStore.user) {
-    orderForm.value.name = authStore.user.name
-    orderForm.value.phone = authStore.user.phone
-  }
-})
 </script>
 
 <style scoped>
-.checkout {
-  max-width: 100%;
+.checkout-page {
+  min-height: 100vh;
+  background: #F9FAFB;
+  padding-bottom: 100px;
 }
 
-.header {
-  margin-bottom: 24px;
+.checkout-header {
+  background: white;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #007AFF;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.back-btn:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.checkout-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1C1C1E;
+  margin: 0;
 }
 
 .checkout-content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
 .order-summary {
-  background: var(--tg-theme-secondary-bg-color, #f8f8f8);
-  border-radius: 12px;
-  padding: 16px;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .order-summary h2 {
-  margin-bottom: 16px;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1C1C1E;
+  margin: 0 0 20px 0;
 }
 
 .order-items {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .order-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .order-item:last-child {
   border-bottom: none;
 }
 
-.item-info h4 {
-  font-size: 14px;
-  margin-bottom: 2px;
+.item-image {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.item-info p {
-  font-size: 12px;
-  color: var(--tg-theme-hint-color, #666666);
+.item-info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.item-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1C1C1E;
+  margin-bottom: 4px;
+}
+
+.item-details {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+  color: #8E8E93;
 }
 
 .item-total {
+  font-size: 16px;
   font-weight: 600;
-  color: var(--tg-theme-button-color, #007AFF);
+  color: #1C1C1E;
 }
 
 .order-total {
-  border-top: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 16px;
 }
 
-.total-row {
+.total-line {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #8E8E93;
+}
+
+.total-line.final {
   font-size: 18px;
   font-weight: 600;
-  color: var(--tg-theme-button-color, #007AFF);
+  color: #1C1C1E;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 12px;
+  margin-top: 12px;
 }
 
-.order-form {
-  background: var(--tg-theme-secondary-bg-color, #f8f8f8);
-  border-radius: 12px;
-  padding: 16px;
+.contact-info {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.order-form h2 {
-  margin-bottom: 16px;
-  font-size: 18px;
+.contact-info h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1C1C1E;
+  margin: 0 0 20px 0;
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.form-label {
+.form-group label {
   display: block;
-  margin-bottom: 8px;
+  font-size: 14px;
   font-weight: 500;
+  color: #1C1C1E;
+  margin-bottom: 8px;
 }
 
-.form-input {
+.form-group input,
+.form-group textarea {
   width: 100%;
-  padding: 12px;
-  border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-  border-radius: 8px;
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   font-size: 16px;
-  background-color: var(--tg-theme-bg-color, #ffffff);
-  color: var(--tg-theme-text-color, #000000);
+  background: #F9FAFB;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.form-input:focus {
+.form-group input:focus,
+.form-group textarea:focus {
   outline: none;
-  border-color: var(--tg-theme-button-color, #007AFF);
+  border-color: #007AFF;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
-.form-input:disabled {
-  opacity: 0.6;
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.submit-btn {
+  width: 100%;
+  background: #34C759;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #30D158;
+  box-shadow: 0 0 16px rgba(52, 199, 89, 0.4);
+  transform: translateY(-1px);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.submit-btn:disabled {
+  background: #8E8E93;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
-.checkout-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.checkout-actions .btn {
-  flex: 1;
-}
-
-.empty-cart {
-  text-align: center;
-  padding: 32px;
-}
-
-.empty-cart p {
-  margin-bottom: 16px;
-  color: var(--tg-theme-hint-color, #666666);
-}
-
+/* Responsive */
 @media (max-width: 480px) {
-  .checkout-actions {
-    flex-direction: column;
+  .checkout-header {
+    padding: 16px 20px;
+  }
+  
+  .checkout-header h1 {
+    font-size: 20px;
+  }
+  
+  .checkout-content {
+    padding: 20px;
+  }
+  
+  .order-summary,
+  .contact-info {
+    padding: 20px;
+  }
+  
+  .item-image {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .item-name {
+    font-size: 14px;
+  }
+  
+  .item-details {
+    font-size: 12px;
+  }
+  
+  .submit-btn {
+    font-size: 16px;
+    padding: 14px 18px;
   }
 }
 </style>

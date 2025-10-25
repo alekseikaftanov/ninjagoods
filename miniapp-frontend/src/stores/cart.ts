@@ -29,16 +29,45 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   // Добавить товар в корзину
-  const addToCart = (product: Product, quantity: number = 1) => {
+  const addItem = (product: Product, quantity: number = 1) => {
     const existingItem = items.value.find(item => item.product.id === product.id)
+    const roundedQuantity = Math.round(quantity)
     
     if (existingItem) {
-      existingItem.quantity += quantity
+      existingItem.quantity += roundedQuantity
     } else {
       items.value.push({
         product,
-        quantity
+        quantity: roundedQuantity
       })
+    }
+  }
+
+  // Увеличить количество товара
+  const increaseQuantity = (productId: number) => {
+    const item = items.value.find(item => item.product.id === productId)
+    if (item) {
+      item.quantity += 1
+    }
+  }
+
+  // Уменьшить количество товара
+  const decreaseQuantity = (productId: number) => {
+    const item = items.value.find(item => item.product.id === productId)
+    if (item) {
+      if (item.quantity > 1) {
+        item.quantity -= 1
+      } else {
+        removeItem(productId)
+      }
+    }
+  }
+
+  // Удалить товар из корзины
+  const removeItem = (productId: number) => {
+    const index = items.value.findIndex(item => item.product.id === productId)
+    if (index > -1) {
+      items.value.splice(index, 1)
     }
   }
 
@@ -46,19 +75,12 @@ export const useCartStore = defineStore('cart', () => {
   const updateQuantity = (productId: number, quantity: number) => {
     const item = items.value.find(item => item.product.id === productId)
     if (item) {
-      if (quantity <= 0) {
-        removeFromCart(productId)
+      const roundedQuantity = Math.round(quantity)
+      if (roundedQuantity <= 0) {
+        removeItem(productId)
       } else {
-        item.quantity = quantity
+        item.quantity = roundedQuantity
       }
-    }
-  }
-
-  // Удалить товар из корзины
-  const removeFromCart = (productId: number) => {
-    const index = items.value.findIndex(item => item.product.id === productId)
-    if (index > -1) {
-      items.value.splice(index, 1)
     }
   }
 
@@ -82,9 +104,11 @@ export const useCartStore = defineStore('cart', () => {
     totalPrice,
     isInCart,
     getQuantity,
-    addToCart,
+    addItem,
+    increaseQuantity,
+    decreaseQuantity,
+    removeItem,
     updateQuantity,
-    removeFromCart,
     clearCart,
     getOrderItems,
   }

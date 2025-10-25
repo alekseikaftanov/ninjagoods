@@ -4,6 +4,7 @@ import Login from '../views/Login.vue'
 import Dashboard from '../views/Dashboard.vue'
 import Categories from '../views/Categories.vue'
 import Products from '../views/Products.vue'
+import Orders from '../views/Orders.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -34,6 +35,12 @@ const router = createRouter({
       path: '/products',
       name: 'Products',
       component: Products,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/orders',
+      name: 'Orders',
+      component: Orders,
       meta: { requiresAuth: true }
     }
   ]
