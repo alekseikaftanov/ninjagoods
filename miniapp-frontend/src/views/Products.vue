@@ -48,7 +48,7 @@
           <button
             v-if="!cartStore.isInCart(product.id)"
             @click.stop="addToCart(product)"
-            class="btn btn-primary btn-small"
+            class="btn btn-primary btn-small add-to-cart-btn"
           >
             В корзину
           </button>
@@ -228,12 +228,26 @@ onMounted(() => {
 
 .product-actions {
   padding: 0 12px 12px;
+  display: flex;
+  justify-content: center;
 }
 
 .btn-small {
   padding: 8px 12px;
   font-size: 14px;
   min-height: 36px;
+}
+
+.add-to-cart-btn {
+  width: 100%;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-to-cart-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
 }
 
 .quantity-controls {

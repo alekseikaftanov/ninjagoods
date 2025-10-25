@@ -58,14 +58,14 @@
           <button
             v-if="!cartStore.isInCart(product.id)"
             @click="addToCart"
-            class="btn btn-primary"
+            class="btn btn-primary add-to-cart-btn"
           >
             В корзину
           </button>
           <button
             v-else
             @click="updateCart"
-            class="btn btn-primary"
+            class="btn btn-primary add-to-cart-btn"
           >
             Обновить в корзине
           </button>
@@ -211,6 +211,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  align-items: center;
 }
 
 .quantity-controls {
@@ -225,6 +226,21 @@ onMounted(() => {
   font-weight: 600;
   min-width: 40px;
   text-align: center;
+}
+
+.add-to-cart-btn {
+  width: 100%;
+  max-width: 300px;
+  padding: 16px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.add-to-cart-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
 
 .loading, .error {
