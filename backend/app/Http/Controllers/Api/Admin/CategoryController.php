@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\AdminLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -44,6 +45,15 @@ class CategoryController extends Controller
 
         $category = Category::create($request->all());
 
+        AdminLog::logAction(
+            'created',
+            'category',
+            $category->name,
+            $category->id,
+            null,
+            $request->ip()
+        );
+
         return response()->json([
             'success' => true,
             'data' => $category,
@@ -60,7 +70,20 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id',
         ]);
 
+        $oldData = $category->toArray();
         $category->update($request->all());
+
+        AdminLog::logAction(
+            'updated',
+            'category',
+            $category->name,
+            $category->id,
+            [
+                'old' => $oldData,
+                'new' => $category->toArray()
+            ],
+            $request->ip()
+        );
 
         return response()->json([
             'success' => true,
@@ -73,7 +96,19 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): JsonResponse
     {
+        $categoryName = $category->name;
+        $categoryId = $category->id;
+        
         $category->delete();
+
+        AdminLog::logAction(
+            'deleted',
+            'category',
+            $categoryName,
+            $categoryId,
+            null,
+            request()->ip()
+        );
 
         return response()->json([
             'success' => true,

@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ProductCsvController as AdminProductCsvController;
 use App\Http\Controllers\Api\Admin\LogController as AdminLogController;
-use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Api\Admin\AdminLogController as AdminActionLogController;
 
 // Публичные API маршруты
 Route::post('/auth/telegram', [AuthController::class, 'telegram']);
@@ -49,4 +49,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders', [AdminOrderController::class, 'index']);
         Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
         Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy']);
+        
+        // Логи администратора
+        Route::get('/admin-logs', [AdminActionLogController::class, 'index']);
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\AdminLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -49,6 +50,15 @@ class ProductController extends Controller
 
         $product = Product::create($request->all());
 
+        AdminLog::logAction(
+            'created',
+            'product',
+            $product->name,
+            $product->id,
+            null,
+            $request->ip()
+        );
+
         return response()->json([
             'success' => true,
             'data' => $product->load('category'),
@@ -70,7 +80,20 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
         ]);
 
+        $oldData = $product->toArray();
         $product->update($request->all());
+
+        AdminLog::logAction(
+            'updated',
+            'product',
+            $product->name,
+            $product->id,
+            [
+                'old' => $oldData,
+                'new' => $product->toArray()
+            ],
+            $request->ip()
+        );
 
         return response()->json([
             'success' => true,
@@ -83,7 +106,19 @@ class ProductController extends Controller
      */
     public function destroy(Product $product): JsonResponse
     {
+        $productName = $product->name;
+        $productId = $product->id;
+        
         $product->delete();
+
+        AdminLog::logAction(
+            'deleted',
+            'product',
+            $productName,
+            $productId,
+            null,
+            request()->ip()
+        );
 
         return response()->json([
             'success' => true,

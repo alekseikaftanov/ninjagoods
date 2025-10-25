@@ -14,7 +14,7 @@
 
       <!-- Stats Cards -->
       <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card" @click="toggleChart">
           <div class="stat-icon">📦</div>
           <div class="stat-content">
             <div class="stat-number">{{ totalOrders }}</div>
@@ -24,7 +24,7 @@
         <div class="stat-card">
           <div class="stat-icon">💰</div>
           <div class="stat-content">
-            <div class="stat-number">{{ totalRevenue }} ₽</div>
+            <div class="stat-number">{{ formatPrice(totalRevenue) }} ₽</div>
             <div class="stat-label">Общая сумма</div>
           </div>
         </div>
@@ -33,6 +33,105 @@
           <div class="stat-content">
             <div class="stat-number">{{ todayOrders }}</div>
             <div class="stat-label">Сегодня</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div v-if="showChart" class="chart-container">
+        <div class="chart-header">
+          <h3>📈 Заказы по дням</h3>
+          <button @click="closeChart" class="close-chart">×</button>
+        </div>
+        <div class="chart-content">
+          <div v-if="chartData.length === 0" class="no-data">
+            Нет данных для отображения
+          </div>
+          <div v-else class="modern-chart">
+            <svg class="chart-svg" viewBox="0 0 400 200">
+              <!-- Градиент для заливки -->
+              <defs>
+                <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#007AFF;stop-opacity:0.3" />
+                  <stop offset="100%" style="stop-color:#007AFF;stop-opacity:0.05" />
+                </linearGradient>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#007AFF" />
+                  <stop offset="100%" style="stop-color:#34C759" />
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge> 
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              
+              <!-- Сетка -->
+              <g class="grid-lines">
+                <line v-for="i in 4" :key="`h-${i}`" 
+                      :x1="0" :y1="i * 40" :x2="400" :y2="i * 40" 
+                      stroke="rgba(0,0,0,0.04)" stroke-width="1"/>
+                <line v-for="i in 7" :key="`v-${i}`" 
+                      :x1="i * 57.14" :y1="0" :x2="i * 57.14" :y2="200" 
+                      stroke="rgba(0,0,0,0.04)" stroke-width="1"/>
+              </g>
+              
+              <!-- Область под кривой -->
+              <path 
+                :d="areaPath" 
+                fill="url(#areaGradient)" 
+                class="area-fill"
+              />
+              
+              <!-- Основная линия -->
+              <path 
+                :d="linePath" 
+                fill="none" 
+                stroke="url(#lineGradient)" 
+                stroke-width="3" 
+                class="main-line"
+                filter="url(#glow)"
+              />
+              
+              <!-- Точки данных -->
+              <g class="data-points">
+                <circle 
+                  v-for="([date, count], index) in chartData" 
+                  :key="`point-${index}`"
+                  :cx="getX(index)" 
+                  :cy="getY(count)" 
+                  r="4" 
+                  fill="white" 
+                  stroke="#007AFF" 
+                  stroke-width="2"
+                  class="data-point"
+                  @mouseenter="showTooltip($event, date, count)"
+                  @mouseleave="hideTooltip"
+                />
+              </g>
+              
+              <!-- Подписи осей -->
+              <g class="axis-labels">
+                <text v-for="([date, count], index) in chartData" 
+                      :key="`label-${index}`"
+                      :x="getX(index)" 
+                      y="195" 
+                      text-anchor="middle" 
+                      class="axis-label">{{ formatDateShort(date) }}</text>
+              </g>
+            </svg>
+            
+            <!-- Tooltip -->
+            <div v-if="tooltip.visible" 
+                 class="chart-tooltip" 
+                 :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
+              <div class="tooltip-content">
+                <div class="tooltip-date">{{ tooltip.date }}</div>
+                <div class="tooltip-value">{{ tooltip.value }} заказов</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -104,7 +203,7 @@
                 </td>
                 <td class="order-total">
                   <div class="price-container">
-                    <span class="price-amount">{{ order.total }}</span>
+                    <span class="price-amount">{{ formatPrice(order.total) }}</span>
                     <span class="price-currency">₽</span>
                   </div>
                 </td>
@@ -218,12 +317,101 @@ const selectedOrder = ref<Order | null>(null)
 const loading = ref(false)
 const sortBy = ref('created_at')
 const sortOrder = ref('desc')
+const showChart = ref(false)
 
 const totalOrders = computed(() => orders.value.length)
-const totalRevenue = computed(() => orders.value.reduce((sum, order) => sum + order.total, 0))
+const totalRevenue = computed(() => {
+  return orders.value.reduce((sum, order) => {
+    const total = typeof order.total === 'string' ? parseFloat(order.total) : order.total
+    return sum + (isNaN(total) ? 0 : total)
+  }, 0)
+})
 const todayOrders = computed(() => {
   const today = new Date().toDateString()
   return orders.value.filter(order => new Date(order.created_at).toDateString() === today).length
+})
+
+// Данные для графика за последние 7 дней
+const chartData = computed(() => {
+  const data: { [key: string]: number } = {}
+  
+  // Создаем массив последних 7 дней
+  const last7Days = []
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date()
+    date.setDate(date.getDate() - i)
+    const dateStr = date.toLocaleDateString('ru-RU')
+    last7Days.push(dateStr)
+    data[dateStr] = 0 // Инициализируем нулем
+  }
+  
+  // Заполняем реальными данными
+  orders.value.forEach(order => {
+    const date = new Date(order.created_at).toLocaleDateString('ru-RU')
+    if (data.hasOwnProperty(date)) {
+      data[date] = (data[date] || 0) + 1
+    }
+  })
+  
+  return last7Days.map(date => [date, data[date]])
+})
+
+// Данные для современного графика
+const maxValue = computed(() => Math.max(...chartData.value.map(([, count]) => count as number), 1))
+
+const getX = (index: number) => {
+  return (index * 57.14) + 28.57 // Центр каждого столбца
+}
+
+const getY = (value: number) => {
+  return 180 - ((value / maxValue.value) * 160) + 10 // Инвертируем Y и добавляем отступ
+}
+
+// SVG пути для плавной кривой
+const linePath = computed(() => {
+  if (chartData.value.length < 2) return ''
+  
+  const points = chartData.value.map(([, count], index) => {
+    const x = getX(index)
+    const y = getY(count as number)
+    return `${x},${y}`
+  })
+  
+  // Создаем плавную кривую с помощью cubic bezier
+  let path = `M ${points[0]}`
+  
+  for (let i = 1; i < points.length; i++) {
+    const [x, y] = points[i].split(',').map(Number)
+    const [prevX, prevY] = points[i - 1].split(',').map(Number)
+    
+    const cp1x = prevX + (x - prevX) / 3
+    const cp1y = prevY
+    const cp2x = x - (x - prevX) / 3
+    const cp2y = y
+    
+    path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${x},${y}`
+  }
+  
+  return path
+})
+
+const areaPath = computed(() => {
+  if (chartData.value.length < 2) return ''
+  
+  const line = linePath.value
+  const firstX = getX(0)
+  const lastX = getX(chartData.value.length - 1)
+  
+  return `${line} L ${lastX},190 L ${firstX},190 Z`
+})
+
+// Tooltip состояние
+const tooltip = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  date: '',
+  value: 0
 })
 
 onMounted(() => {
@@ -247,6 +435,51 @@ const loadOrders = async () => {
   }
 }
 
+const formatPrice = (price: string | number): string => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price
+  return isNaN(numPrice) ? '0' : numPrice.toFixed(0)
+}
+
+const formatDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const toggleChart = () => {
+  showChart.value = !showChart.value
+}
+
+const closeChart = () => {
+  showChart.value = false
+}
+
+const showTooltip = (event: MouseEvent, date: string, value: number) => {
+  tooltip.value = {
+    visible: true,
+    x: event.clientX - 50,
+    y: event.clientY - 60,
+    date: date,
+    value: value
+  }
+}
+
+const hideTooltip = () => {
+  tooltip.value.visible = false
+}
+
+const formatDateShort = (dateString: string) => {
+  const date = new Date(dateString.split('.').reverse().join('-'))
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit'
+  })
+}
+
 const refreshOrders = () => {
   loadOrders()
 }
@@ -257,17 +490,6 @@ const viewOrder = (order: Order) => {
 
 const closeModal = () => {
   selectedOrder.value = null
-}
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 }
 </script>
 
@@ -729,6 +951,230 @@ const formatDate = (dateString: string) => {
   .modal-content {
     margin: 10px;
     max-height: 90vh;
+  }
+}
+
+/* Modern Chart Styles */
+.chart-container {
+  background: #F9FAFB;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: var(--spacing-lg);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 20px 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+}
+
+.chart-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1C1C1E;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.close-chart {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #8E8E93;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-chart:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1C1C1E;
+  transform: scale(1.1);
+}
+
+.chart-content {
+  padding: 0 24px 24px 24px;
+}
+
+.no-data {
+  text-align: center;
+  color: #8E8E93;
+  font-size: 16px;
+  padding: 60px 20px;
+  font-weight: 500;
+}
+
+.modern-chart {
+  position: relative;
+  height: 240px;
+  background: #F9FAFB;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.grid-lines {
+  opacity: 0.6;
+}
+
+.area-fill {
+  opacity: 0;
+  animation: fadeInArea 0.8s ease-out 0.3s forwards;
+}
+
+.main-line {
+  opacity: 0;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 1.2s ease-out 0.5s forwards;
+}
+
+.data-points {
+  opacity: 0;
+  animation: fadeInPoints 0.6s ease-out 1s forwards;
+}
+
+.data-point {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.data-point:hover {
+  r: 6;
+  filter: drop-shadow(0 2px 8px rgba(0, 122, 255, 0.3));
+}
+
+.axis-labels {
+  opacity: 0;
+  animation: fadeInLabels 0.4s ease-out 1.2s forwards;
+}
+
+.axis-label {
+  font-size: 13px;
+  fill: #8E8E93;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+}
+
+.chart-tooltip {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+
+.tooltip-content {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(20px);
+  animation: tooltipAppear 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.tooltip-date {
+  font-size: 12px;
+  color: #8E8E93;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.tooltip-value {
+  font-size: 14px;
+  color: #1C1C1E;
+  font-weight: 600;
+}
+
+/* Анимации */
+@keyframes fadeInArea {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drawLine {
+  from {
+    stroke-dashoffset: 1000;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInPoints {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInLabels {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipAppear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .modern-chart {
+    height: 200px;
+  }
+  
+  .chart-header {
+    padding: 20px 20px 16px 20px;
+  }
+  
+  .chart-content {
+    padding: 0 20px 20px 20px;
+  }
+  
+  .chart-header h3 {
+    font-size: 16px;
+  }
+  
+  .axis-label {
+    font-size: 11px;
   }
 }
 </style>
