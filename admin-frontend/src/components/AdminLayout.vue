@@ -84,8 +84,8 @@ const handleLogout = () => {
 
 .sidebar {
   width: 280px;
-  background: linear-gradient(180deg, #F9FAFB 0%, #F2F3F5 100%);
-  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(180deg, var(--bg-primary) 0%, #F2F3F5 100%);
+  box-shadow: 2px 0 16px var(--shadow-light);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -93,7 +93,7 @@ const handleLogout = () => {
   left: 0;
   height: 100vh;
   z-index: 1000;
-  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  border-right: 1px solid var(--border-color);
 }
 
 .sidebar-content {
@@ -105,9 +105,9 @@ const handleLogout = () => {
 }
 
 .sidebar-header {
-  padding: 0 32px 32px 32px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  margin-bottom: 32px;
+  padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-xl);
 }
 
 .brand-logo {
@@ -201,8 +201,8 @@ const handleLogout = () => {
 }
 
 .sidebar-footer {
-  padding: 16px 32px 32px 32px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding: var(--spacing-md) var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  border-top: 1px solid var(--border-color);
   background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.5) 100%);
 }
 
@@ -251,11 +251,11 @@ const handleLogout = () => {
 
 .main-content {
   flex: 1;
-  padding: 32px;
+  padding: var(--spacing-xl);
   margin-left: 280px;
   max-width: calc(100% - 280px);
   min-height: 100vh;
-  background: #F9FAFB;
+  background: var(--bg-primary);
 }
 
 /* Адаптивность */

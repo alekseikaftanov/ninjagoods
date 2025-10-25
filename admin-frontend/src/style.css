@@ -1,34 +1,56 @@
 /* Apple-Style Admin Panel CSS */
 :root {
-  /* Apple Color Palette */
-  --bg-primary: #F9F9F9;
+  /* Apple Color Palette - Updated */
+  --bg-primary: #F9FAFB;
   --bg-secondary: #FFFFFF;
   --text-primary: #1C1C1E;
   --text-secondary: #8E8E93;
+  --text-tertiary: #6B7280;
   --accent-blue: #007AFF;
   --accent-blue-light: rgba(0, 122, 255, 0.1);
-  --border-color: rgba(60, 60, 67, 0.29);
-  --shadow-light: rgba(0, 0, 0, 0.1);
-  --shadow-medium: rgba(0, 0, 0, 0.15);
+  --accent-green: #34C759;
+  --accent-green-light: rgba(52, 199, 89, 0.1);
+  --accent-purple: #AF52DE;
+  --accent-purple-light: rgba(175, 82, 222, 0.1);
+  --accent-orange: #FF9500;
+  --accent-orange-light: rgba(255, 149, 0, 0.1);
+  --border-color: rgba(0, 0, 0, 0.05);
+  --shadow-light: rgba(0, 0, 0, 0.04);
+  --shadow-medium: rgba(0, 0, 0, 0.08);
+  --shadow-heavy: rgba(0, 0, 0, 0.12);
   
-  /* Typography */
+  /* Typography - Enhanced */
   --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  --font-size-hero: 32px;
   --font-size-large: 28px;
   --font-size-medium: 20px;
-  --font-size-regular: 15px;
-  --font-size-small: 13px;
+  --font-size-regular: 16px;
+  --font-size-small: 14px;
+  --font-size-tiny: 13px;
   
-  /* Spacing */
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Spacing - Enhanced */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
+  --spacing-2xl: 40px;
+  --spacing-3xl: 48px;
+  --spacing-4xl: 60px;
   
-  /* Border radius */
+  /* Border radius - Enhanced */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
 }
 
 * {
