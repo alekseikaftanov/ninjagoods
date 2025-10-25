@@ -110,7 +110,7 @@ const goToProduct = (productId: number) => {
 }
 
 const addToCart = (product: any) => {
-  cartStore.addToCart(product, 1)
+  cartStore.addToCart(product, product.min_order)
   hapticFeedback('light')
 }
 
@@ -122,8 +122,16 @@ const increaseQuantity = (productId: number) => {
 
 const decreaseQuantity = (productId: number) => {
   const currentQuantity = cartStore.getQuantity(productId)
-  cartStore.updateQuantity(productId, currentQuantity - 1)
-  hapticFeedback('light')
+  const product = catalogStore.products.find(p => p.id === productId)
+  
+  if (product && currentQuantity > product.min_order) {
+    cartStore.updateQuantity(productId, currentQuantity - 1)
+    hapticFeedback('light')
+  } else if (product && currentQuantity <= product.min_order) {
+    // Удаляем товар из корзины, если количество меньше или равно минимальному заказу
+    cartStore.removeFromCart(productId)
+    hapticFeedback('medium')
+  }
 }
 
 // Отслеживаем изменения параметров маршрута

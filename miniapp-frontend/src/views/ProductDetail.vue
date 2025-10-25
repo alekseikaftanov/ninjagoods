@@ -117,12 +117,22 @@ const loadProduct = async () => {
 const increaseQuantity = () => {
   quantity.value++
   hapticFeedback('light')
+  
+  // Если товар в корзине, обновляем количество
+  if (product.value && cartStore.isInCart(product.value.id)) {
+    cartStore.updateQuantity(product.value.id, quantity.value)
+  }
 }
 
 const decreaseQuantity = () => {
   if (quantity.value > (product.value?.min_order || 1)) {
     quantity.value--
     hapticFeedback('light')
+    
+    // Если товар в корзине, обновляем количество
+    if (product.value && cartStore.isInCart(product.value.id)) {
+      cartStore.updateQuantity(product.value.id, quantity.value)
+    }
   }
 }
 
