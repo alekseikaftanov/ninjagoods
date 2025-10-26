@@ -42,7 +42,6 @@
             v-for="product in allProducts"
             :key="product.id"
             class="product-card"
-            @click="addToCart(product)"
           >
             <div class="product-image-container">
               <img :src="product.photo_url" :alt="product.name" class="product-image" />
@@ -58,13 +57,13 @@
                 <span class="product-price">{{ product.price }} ₽</span>
               </div>
               <!-- Кнопка добавления или управления количеством -->
-              <div v-if="!cartStore.isInCart(product.id)" class="btn-add-to-cart" @click="addToCart(product)">
+              <div v-if="!cartStore.isInCart(product.id)" class="btn-add-to-cart" @click.stop="addToCart(product)">
                 Добавить
               </div>
               <div v-else class="quantity-controls">
-                <button @click="decreaseQuantity(product)" class="btn-quantity minus">-</button>
+                <button @click.stop="decreaseQuantity(product)" class="btn-quantity minus">-</button>
                 <span class="quantity-display">{{ Math.round(cartStore.getQuantity(product.id)) }}</span>
-                <button @click="increaseQuantity(product)" class="btn-quantity plus">+</button>
+                <button @click.stop="increaseQuantity(product)" class="btn-quantity plus">+</button>
               </div>
             </div>
           </div>
@@ -383,6 +382,11 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   margin-top: auto;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .btn-add-to-cart:hover {

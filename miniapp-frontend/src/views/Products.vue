@@ -30,11 +30,10 @@
         v-for="product in products"
         :key="product.id"
         class="product-card"
-        @click="goToProduct(product.id)"
       >
         <img :src="product.photo_url" :alt="product.name" class="product-image" />
         <div class="product-info">
-          <h3>{{ product.name }}</h3>
+          <h3 @click="goToProduct(product.id)" class="product-title">{{ product.name }}</h3>
           <p class="product-description">{{ product.description }}</p>
           <div class="product-details">
             <span class="product-price">{{ product.price }} ₽</span>
@@ -85,7 +84,7 @@ const router = useRouter()
 const catalogStore = useCatalogStore()
 const cartStore = useCartStore()
 
-const currentCategory = ref(null)
+const currentCategory = ref<any>(null)
 
 const products = computed(() => catalogStore.products)
 
@@ -110,7 +109,7 @@ const goToProduct = (productId: number) => {
 }
 
 const addToCart = (product: any) => {
-  cartStore.addToCart(product, product.min_order)
+  cartStore.addItem(product, product.min_order)
   hapticFeedback('light')
 }
 
@@ -127,9 +126,9 @@ const decreaseQuantity = (productId: number) => {
   if (product && currentQuantity > product.min_order) {
     cartStore.updateQuantity(productId, currentQuantity - 1)
     hapticFeedback('light')
-  } else if (product && currentQuantity <= product.min_order) {
-    // Удаляем товар из корзины, если количество меньше или равно минимальному заказу
-    cartStore.removeFromCart(productId)
+  } else if (product && currentQuantity === product.min_order) {
+    // Удаляем товар из корзины, если количество равно минимальному заказу
+    cartStore.removeItem(productId)
     hapticFeedback('medium')
   }
 }
@@ -200,6 +199,15 @@ onMounted(() => {
   line-height: 1.3;
 }
 
+.product-title {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.product-title:hover {
+  color: var(--tg-theme-button-color, #007AFF);
+}
+
 .product-description {
   font-size: 12px;
   color: var(--tg-theme-hint-color, #666666);
@@ -208,6 +216,7 @@ onMounted(() => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  line-clamp: 2;
   overflow: hidden;
 }
 

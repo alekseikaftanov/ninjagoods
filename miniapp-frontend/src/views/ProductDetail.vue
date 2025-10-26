@@ -117,28 +117,18 @@ const loadProduct = async () => {
 const increaseQuantity = () => {
   quantity.value++
   hapticFeedback('light')
-  
-  // Если товар в корзине, обновляем количество
-  if (product.value && cartStore.isInCart(product.value.id)) {
-    cartStore.updateQuantity(product.value.id, quantity.value)
-  }
 }
 
 const decreaseQuantity = () => {
   if (quantity.value > (product.value?.min_order || 1)) {
     quantity.value--
     hapticFeedback('light')
-    
-    // Если товар в корзине, обновляем количество
-    if (product.value && cartStore.isInCart(product.value.id)) {
-      cartStore.updateQuantity(product.value.id, quantity.value)
-    }
   }
 }
 
 const addToCart = () => {
   if (product.value) {
-    cartStore.addToCart(product.value, quantity.value)
+    cartStore.addItem(product.value, quantity.value)
     hapticFeedback('success')
   }
 }
@@ -239,13 +229,16 @@ onMounted(() => {
 }
 
 .add-to-cart-btn {
-  width: 100%;
-  max-width: 300px;
+  width: 200px;
   padding: 16px 24px;
   font-size: 18px;
   font-weight: 600;
   border-radius: 12px;
   transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .add-to-cart-btn:hover {
