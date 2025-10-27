@@ -12,13 +12,16 @@ use Illuminate\Http\Request;
 class B2BOrderController extends Controller
 {
     /**
-     * Get all orders for organization
+     * Get all orders for user's restaurants
      */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
         
-        $query = Order::where('organization_id', $user->organization_id);
+        // Get all restaurant IDs user has access to
+        $restaurantIds = $user->allRestaurants()->pluck('id');
+        
+        $query = Order::whereIn('restaurant_id', $restaurantIds);
         
         // Employees can only see their own draft orders
         if ($user->isEmployee()) {
@@ -36,7 +39,7 @@ class B2BOrderController extends Controller
             });
         }
         
-        $orders = $query->with(['buyer', 'orderItems.employee'])->get();
+        $orders = $query->with(['buyer', 'orderItems.employee', 'restaurant'])->get();
 
         return response()->json([
             'success' => true,
@@ -51,15 +54,23 @@ class B2BOrderController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->organization_id) {
+        $validated = $request->validate([
+            'restaurant_id' => 'required|exists:restaurants,id',
+        ]);
+
+        $restaurantId = $validated['restaurant_id'];
+
+        // Check if user has access to this restaurant
+        $restaurant = \App\Models\Restaurant::findOrFail($restaurantId);
+        if (!$restaurant->isOwnedBy($user) && !$restaurant->hasEmployee($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No organization found',
-            ], 400);
+                'message' => 'You do not have access to this restaurant',
+            ], 403);
         }
 
         $orderData = [
-            'organization_id' => $user->organization_id,
+            'restaurant_id' => $restaurantId,
             'user_id' => $user->telegram_id ?? 0, // Legacy field
             'status' => 'draft',
             'items' => [],
@@ -85,8 +96,9 @@ class B2BOrderController extends Controller
     {
         $user = $request->user();
 
-        // Check access
-        if ($order->organization_id !== $user->organization_id) {
+        // Check if user has access to this order's restaurant
+        $restaurantIds = $user->allRestaurants()->pluck('id');
+        if (!$restaurantIds->contains($order->restaurant_id)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Forbidden',
@@ -104,7 +116,7 @@ class B2BOrderController extends Controller
             }
         }
 
-        $order->load(['buyer', 'orderItems.employee']);
+        $order->load(['buyer', 'orderItems.employee', 'restaurant']);
 
         return response()->json([
             'success' => true,
@@ -119,8 +131,9 @@ class B2BOrderController extends Controller
     {
         $user = $request->user();
 
-        // Check access
-        if ($order->organization_id !== $user->organization_id) {
+        // Check if user has access to this order's restaurant
+        $restaurantIds = $user->allRestaurants()->pluck('id');
+        if (!$restaurantIds->contains($order->restaurant_id)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Forbidden',
@@ -179,7 +192,9 @@ class B2BOrderController extends Controller
             ], 403);
         }
 
-        if ($order->organization_id !== $user->organization_id) {
+        // Check if user has access to this order's restaurant
+        $restaurantIds = $user->allRestaurants()->pluck('id');
+        if (!$restaurantIds->contains($order->restaurant_id)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Forbidden',
@@ -224,7 +239,9 @@ class B2BOrderController extends Controller
     {
         $user = $request->user();
 
-        if ($order->organization_id !== $user->organization_id) {
+        // Check if user has access to this order's restaurant
+        $restaurantIds = $user->allRestaurants()->pluck('id');
+        if (!$restaurantIds->contains($order->restaurant_id)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Forbidden',

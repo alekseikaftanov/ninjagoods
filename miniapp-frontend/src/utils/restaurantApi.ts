@@ -188,8 +188,8 @@ export const API = {
       const response = await apiClient.get(`/orders/${id}`)
       return response.data.data
     },
-    create: async (): Promise<Order> => {
-      const response = await apiClient.post('/orders')
+    create: async (restaurantId: number): Promise<Order> => {
+      const response = await apiClient.post('/orders', { restaurant_id: restaurantId })
       return response.data.data
     },
     addItem: async (orderId: number, item: CreateOrderItemData): Promise<OrderItem> => {

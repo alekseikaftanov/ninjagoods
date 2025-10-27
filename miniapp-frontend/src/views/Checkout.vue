@@ -46,28 +46,39 @@
       <div class="contact-info">
         <h2>Информация о заказе</h2>
         
-        <!-- Organization Info -->
-        <div v-if="organization" class="info-section">
-          <h3>Организация</h3>
+        <!-- Restaurant Selection -->
+        <div class="form-group">
+          <label>Выберите ресторан <span class="required">*</span></label>
+          <select v-model="selectedRestaurantId" class="restaurant-select">
+            <option :value="null" disabled>-- Выберите ресторан --</option>
+            <option 
+              v-for="restaurant in restaurants" 
+              :key="restaurant.id" 
+              :value="restaurant.id"
+            >
+              {{ restaurant.name }} ({{ restaurant.inn }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Selected Restaurant Info -->
+        <div v-if="selectedRestaurant" class="info-section">
+          <h3>Ресторан</h3>
           <div class="info-row">
             <span class="label">Название:</span>
-            <span class="value">{{ organization.name }}</span>
+            <span class="value">{{ selectedRestaurant.name }}</span>
           </div>
           <div class="info-row">
             <span class="label">ИНН:</span>
-            <span class="value">{{ organization.inn }}</span>
+            <span class="value">{{ selectedRestaurant.inn }}</span>
           </div>
           <div class="info-row">
             <span class="label">Адрес:</span>
-            <span class="value">{{ organization.address_actual }}</span>
+            <span class="value">{{ selectedRestaurant.address_actual }}</span>
           </div>
           <div class="info-row">
             <span class="label">Телефон:</span>
-            <span class="value">{{ organization.phone }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Email:</span>
-            <span class="value">{{ organization.email }}</span>
+            <span class="value">{{ selectedRestaurant.phone }}</span>
           </div>
         </div>
 
@@ -105,14 +116,18 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/mainAuth'
 import { API } from '../utils/restaurantApi'
-import axios from 'axios'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const authStore = useAuthStore()
 
 const user = computed(() => authStore.user)
-const organization = ref(null)
+const restaurants = ref([])
+const selectedRestaurantId = ref<number | null>(null)
+
+const selectedRestaurant = computed(() => {
+  return restaurants.value.find(r => r.id === selectedRestaurantId.value)
+})
 
 const orderData = ref({
   comment: ''
@@ -121,7 +136,7 @@ const orderData = ref({
 const isSubmitting = ref(false)
 
 const canSubmit = computed(() => {
-  return cartStore.totalItems > 0
+  return cartStore.totalItems > 0 && selectedRestaurantId.value !== null
 })
 
 const goBack = () => {
@@ -129,13 +144,16 @@ const goBack = () => {
 }
 
 const submitOrder = async () => {
-  if (!canSubmit.value) return
+  if (!canSubmit.value || selectedRestaurantId.value === null) {
+    alert('Пожалуйста, выберите ресторан')
+    return
+  }
 
   isSubmitting.value = true
 
   try {
-    // Create order using API
-    const order = await API.orders.create()
+    // Create order using API with restaurant ID
+    const order = await API.orders.create(selectedRestaurantId.value)
     
     // Add items to order
     for (const item of cartStore.items) {
@@ -163,20 +181,23 @@ const submitOrder = async () => {
   }
 }
 
-const loadOrganization = async () => {
-  // Organization logic removed - using restaurants now
+const loadRestaurants = async () => {
   try {
-    // TODO: Load restaurant data if needed
-    if (response.success) {
-      organization.value = response.data
+    const response = await API.restaurants.getAll()
+    restaurants.value = response
+    
+    // Auto-select if only one restaurant
+    if (restaurants.value.length === 1) {
+      selectedRestaurantId.value = restaurants.value[0].id
     }
   } catch (error) {
-    console.error('Failed to load organization:', error)
+    console.error('Failed to load restaurants:', error)
+    alert('Ошибка загрузки списка ресторанов')
   }
 }
 
 onMounted(() => {
-  loadOrganization()
+  loadRestaurants()
 })
 </script>
 
@@ -376,6 +397,39 @@ onMounted(() => {
   font-weight: 500;
   color: #1C1C1E;
   margin-bottom: 8px;
+}
+
+.required {
+  color: #FF3B30;
+  font-weight: 700;
+}
+
+.restaurant-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #E5E5E7;
+  border-radius: 12px;
+  font-size: 16px;
+  background: white;
+  color: #1C1C1E;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%231C1C1E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+.restaurant-select:hover {
+  border-color: #C7C7CC;
+}
+
+.restaurant-select:focus {
+  outline: none;
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
 .form-group input,
