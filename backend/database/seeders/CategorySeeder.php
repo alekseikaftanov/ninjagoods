@@ -14,51 +14,45 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         // Основные категории микрозелени
-        $categories = [
-            [
-                'name' => 'Листовая зелень',
-                'parent_id' => null,
-            ],
-            [
-                'name' => 'Корнеплоды',
-                'parent_id' => null,
-            ],
-            [
-                'name' => 'Травы',
-                'parent_id' => null,
-            ],
-        ];
+        $leafyGreens = Category::create([
+            'name' => 'Листовая зелень',
+            'parent_id' => null,
+        ]);
 
-        foreach ($categories as $category) {
-            Category::create($category);
-        }
+        $roots = Category::create([
+            'name' => 'Корнеплоды',
+            'parent_id' => null,
+        ]);
+
+        $herbs = Category::create([
+            'name' => 'Травы',
+            'parent_id' => null,
+        ]);
 
         // Подкатегории
-        $subcategories = [
-            [
-                'name' => 'Салаты',
-                'parent_id' => 1,
-            ],
-            [
-                'name' => 'Шпинат',
-                'parent_id' => 1,
-            ],
-            [
-                'name' => 'Редис',
-                'parent_id' => 2,
-            ],
-            [
-                'name' => 'Базилик',
-                'parent_id' => 3,
-            ],
-            [
-                'name' => 'Кориандр',
-                'parent_id' => 3,
-            ],
-        ];
+        Category::create([
+            'name' => 'Салаты',
+            'parent_id' => $leafyGreens->id,
+        ]);
 
-        foreach ($subcategories as $subcategory) {
-            Category::create($subcategory);
-        }
+        Category::create([
+            'name' => 'Шпинат',
+            'parent_id' => $leafyGreens->id,
+        ]);
+
+        Category::create([
+            'name' => 'Редис',
+            'parent_id' => $roots->id,
+        ]);
+
+        Category::create([
+            'name' => 'Базилик',
+            'parent_id' => $herbs->id,
+        ]);
+
+        Category::create([
+            'name' => 'Кориандр',
+            'parent_id' => $herbs->id,
+        ]);
     }
 }

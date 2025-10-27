@@ -124,7 +124,7 @@ const form = ref({
 
 const loadCategories = async () => {
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/categories', {
+    const response = await axios.get('http://localhost:8000/api/admin/categories', {
       params: {
         sort_by: sortBy.value,
         sort_order: sortOrder.value
@@ -152,9 +152,9 @@ const saveCategory = async () => {
     }
     
     if (editingCategory.value) {
-      await axios.put(`http://localhost:8001/api/admin/categories/${editingCategory.value.id}`, data)
+      await axios.put(`http://localhost:8000/api/admin/categories/${editingCategory.value.id}`, data)
     } else {
-      await axios.post('http://localhost:8001/api/admin/categories', data)
+      await axios.post('http://localhost:8000/api/admin/categories', data)
     }
     
     await loadCategories()
@@ -178,7 +178,7 @@ const editCategory = (category: Category) => {
 const deleteCategory = async (id: number) => {
   if (confirm('Вы уверены, что хотите удалить эту категорию?')) {
     try {
-      await axios.delete(`http://localhost:8001/api/admin/categories/${id}`)
+      await axios.delete(`http://localhost:8000/api/admin/categories/${id}`)
       await loadCategories()
     } catch (error) {
       console.error('Ошибка удаления категории:', error)

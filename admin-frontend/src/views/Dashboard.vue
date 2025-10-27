@@ -289,9 +289,9 @@ const loadStats = async () => {
   try {
     // Загружаем статистику категорий, товаров и заказов
     const [categoriesRes, productsRes, ordersRes] = await Promise.all([
-      axios.get('http://localhost:8002/api/admin/categories'),
-      axios.get('http://localhost:8002/api/admin/products'),
-      axios.get('http://localhost:8002/api/admin/orders')
+      axios.get('http://localhost:8000/api/admin/categories'),
+      axios.get('http://localhost:8000/api/admin/products'),
+      axios.get('http://localhost:8000/api/admin/orders')
     ])
     
     stats.value.categories = categoriesRes.data.data.length
@@ -320,7 +320,7 @@ const loadStats = async () => {
 const loadLogs = async () => {
   loadingLogs.value = true
   try {
-    const response = await axios.get('http://localhost:8002/api/admin/admin-logs', {
+    const response = await axios.get('http://localhost:8000/api/admin/admin-logs', {
       params: { limit: 10 }
     })
     logs.value = response.data.data
@@ -407,8 +407,8 @@ const runTests = async () => {
   showTestModal.value = true
   
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/tests/run')
-    testResults.value = response.data
+    const response = await axios.get('http://localhost:8000/api/admin/tests/run')
+    testResults.value = response.data.data
   } catch (error) {
     console.error('Ошибка выполнения тестов:', error)
     testResults.value = { error: 'Ошибка выполнения тестов' }

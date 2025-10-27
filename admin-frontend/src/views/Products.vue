@@ -222,7 +222,7 @@ const form = ref({
 
 const loadProducts = async () => {
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/products', {
+    const response = await axios.get('http://localhost:8000/api/admin/products', {
       params: {
         sort_by: sortBy.value,
         sort_order: sortOrder.value
@@ -248,7 +248,7 @@ const toggleCsvManager = () => {
 
 const loadCategories = async () => {
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/categories')
+    const response = await axios.get('http://localhost:8000/api/admin/categories')
     categories.value = response.data.data
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error)
@@ -267,9 +267,9 @@ const saveProduct = async () => {
     }
     
     if (editingProduct.value) {
-      await axios.put(`http://localhost:8001/api/admin/products/${editingProduct.value.id}`, data)
+      await axios.put(`http://localhost:8000/api/admin/products/${editingProduct.value.id}`, data)
     } else {
-      await axios.post('http://localhost:8001/api/admin/products', data)
+      await axios.post('http://localhost:8000/api/admin/products', data)
     }
     
     await loadProducts()
@@ -297,7 +297,7 @@ const editProduct = (product: Product) => {
 const deleteProduct = async (id: number) => {
   if (confirm('Вы уверены, что хотите удалить этот товар?')) {
     try {
-      await axios.delete(`http://localhost:8001/api/admin/products/${id}`)
+      await axios.delete(`http://localhost:8000/api/admin/products/${id}`)
       await loadProducts()
     } catch (error) {
       console.error('Ошибка удаления товара:', error)

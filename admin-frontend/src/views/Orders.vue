@@ -446,7 +446,7 @@ onMounted(() => {
 const loadOrders = async () => {
   loading.value = true
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/orders', {
+    const response = await axios.get('http://localhost:8000/api/admin/orders', {
       params: {
         sort_by: sortBy.value,
         sort_order: sortOrder.value

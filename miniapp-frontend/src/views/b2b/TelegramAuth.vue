@@ -2,8 +2,8 @@
   <div class="telegram-auth">
     <div class="auth-container">
       <div class="auth-header">
-        <h1>Авторизация Telegram</h1>
-        <p class="subtitle">Войдите через Telegram для доступа к B2B системе</p>
+        <h1>Авторизация</h1>
+        <p class="subtitle">Войдите через Telegram для доступа к Ninja Goods</p>
       </div>
 
       <div v-if="!error" class="auth-content">

@@ -108,7 +108,7 @@ const dragError = ref(false)
 const exportProducts = async () => {
   isExporting.value = true
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/products/csv/export')
+    const response = await axios.get('http://localhost:8000/api/admin/products/csv/export')
     
     if (response.data.success) {
       const blob = new Blob([response.data.data.csv_content], { type: 'text/csv;charset=utf-8;' })
@@ -135,7 +135,7 @@ const exportProducts = async () => {
 
 const downloadTemplate = async () => {
   try {
-    const response = await axios.get('http://localhost:8001/api/admin/products/csv/template')
+    const response = await axios.get('http://localhost:8000/api/admin/products/csv/template')
     
     if (response.data.success) {
       const blob = new Blob([response.data.data.csv_content], { type: 'text/csv;charset=utf-8;' })
@@ -245,7 +245,7 @@ const processFile = async (file: File) => {
   try {
     const csvContent = await readFileAsText(file)
     
-    const response = await axios.post('http://localhost:8001/api/admin/products/csv/import', {
+    const response = await axios.post('http://localhost:8000/api/admin/products/csv/import', {
       csv_content: csvContent
     })
     
