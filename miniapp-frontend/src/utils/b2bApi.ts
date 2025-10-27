@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8001/api'
+const API_BASE_URL = 'http://localhost:8000/api'
 
 const b2bApi = axios.create({
   baseURL: API_BASE_URL,
@@ -11,7 +11,7 @@ const b2bApi = axios.create({
 
 // Add JWT token to requests
 b2bApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('b2b_token')
+  const token = localStorage.getItem('jwt_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -23,7 +23,7 @@ b2bApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('b2b_token')
+      localStorage.removeItem('jwt_token')
       // Redirect to login
       if (window.location.pathname !== '/b2b/login') {
         window.location.href = '/b2b/login'
@@ -110,45 +110,45 @@ interface CreateOrderItemData {
 export const b2bAPI = {
   auth: {
     telegram: async (data: TelegramAuthData) => {
-      const response = await b2bApi.post('/b2b/auth/telegram', data)
+      const response = await b2bApi.post('/auth/telegram', data)
       return response.data
     },
-    setRole: async (role: 'buyer' | 'employee') => {
-      const response = await b2bApi.post('/b2b/auth/role', { role })
+    setRole: async (role: 'buyer' | 'employee' | 'customer') => {
+      const response = await b2bApi.post('/auth/role', { role })
       return response.data
     },
     me: async () => {
-      const response = await b2bApi.get('/b2b/auth/me')
+      const response = await b2bApi.get('/auth/me')
       return response.data
     },
   },
 
   organization: {
     create: async (data: CreateOrganizationData) => {
-      const response = await b2bApi.post('/b2b/organization', data)
+      const response = await b2bApi.post('/organization', data)
       return response.data
     },
     get: async () => {
-      const response = await b2bApi.get('/b2b/organization')
+      const response = await b2bApi.get('/organization')
       return response.data
     },
     update: async (data: Partial<CreateOrganizationData>) => {
-      const response = await b2bApi.put('/b2b/organization', data)
+      const response = await b2bApi.put('/organization', data)
       return response.data
     },
     generateInvite: async () => {
-      const response = await b2bApi.post('/b2b/organization/invite')
+      const response = await b2bApi.post('/organization/invite')
       return response.data
     },
   },
 
   invite: {
     validate: async (token: string) => {
-      const response = await b2bApi.get(`/b2b/invites/validate?token=${token}`)
+      const response = await b2bApi.get(`/invites/validate?token=${token}`)
       return response.data
     },
     join: async (token: string) => {
-      const response = await b2bApi.post('/b2b/invites/join', { token })
+      const response = await b2bApi.post('/invites/join', { token })
       return response.data
     },
   },

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { b2bAPI } from '../utils/b2bApi'
 
-export type B2BUserRole = 'buyer' | 'employee' | null
+export type B2BUserRole = 'customer' | 'buyer' | 'employee' | null
 
 export interface B2BUser {
   id: number
@@ -21,6 +21,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
   const error = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!user.value && !!token.value)
+  const isCustomer = computed(() => user.value?.role === 'customer')
   const isBuyer = computed(() => user.value?.role === 'buyer')
   const isEmployee = computed(() => user.value?.role === 'employee')
   const hasRole = computed(() => !!user.value?.role)
@@ -45,7 +46,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
       if (response.success) {
         token.value = response.data.token
         user.value = response.data.user
-        localStorage.setItem('b2b_token', token.value)
+        localStorage.setItem('jwt_token', token.value)
         return true
       }
       
@@ -60,7 +61,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
   }
 
   // Set user role
-  const setRole = async (role: 'buyer' | 'employee') => {
+  const setRole = async (role: 'customer' | 'buyer' | 'employee') => {
     isLoading.value = true
     error.value = null
 
@@ -68,7 +69,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
       const response = await b2bAPI.auth.setRole(role)
       
       if (response.success) {
-        user.value = response.data
+        user.value = response.data.user
         return true
       }
       
@@ -107,7 +108,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
 
   // Initialize from local storage
   const initFromStorage = () => {
-    const storedToken = localStorage.getItem('b2b_token')
+    const storedToken = localStorage.getItem('jwt_token')
     if (storedToken) {
       token.value = storedToken
       getCurrentUser()
@@ -119,7 +120,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
     user.value = null
     token.value = null
     error.value = null
-    localStorage.removeItem('b2b_token')
+    localStorage.removeItem('jwt_token')
   }
 
   return {
@@ -128,6 +129,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
     isLoading,
     error,
     isAuthenticated,
+    isCustomer,
     isBuyer,
     isEmployee,
     hasRole,
