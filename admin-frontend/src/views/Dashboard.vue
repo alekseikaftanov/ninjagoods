@@ -18,6 +18,17 @@
           </div>
           <p class="subtitle-text">Обзор системы Ninja Goods</p>
         </div>
+        <button @click="runTests" class="btn-run-tests" :disabled="runningTests">
+          <svg v-if="runningTests" class="spinner" width="16" height="16" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60">
+              <animateTransform attributeName="transform" type="rotate" values="0 12 12;360 12 12" dur="1s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+          <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          {{ runningTests ? 'Выполняются тесты...' : 'Пройти тесты' }}
+        </button>
       </div>
       
       <!-- Stats Grid -->
@@ -128,6 +139,54 @@
         </div>
       </div>
     </div>
+
+    <!-- Test Results Modal -->
+    <div v-if="showTestModal" class="modal-overlay" @click="showTestModal = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Результаты выполнения тестов</h3>
+          <button @click="showTestModal = false" class="btn-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="runningTests" class="loading-container">
+            <div class="spinner-large"></div>
+            <p>Выполняются тесты...</p>
+          </div>
+          <div v-else-if="testResults" class="test-results">
+            <div class="summary">
+              <div class="summary-item passed">
+                <span class="summary-label">Успешно:</span>
+                <span class="summary-value">{{ testResults.tests }}</span>
+              </div>
+              <div class="summary-item assertions">
+                <span class="summary-label">Asserts:</span>
+                <span class="summary-value">{{ testResults.assertions }}</span>
+              </div>
+              <div class="summary-item duration">
+                <span class="summary-label">Время:</span>
+                <span class="summary-value">{{ testResults.duration }}s</span>
+              </div>
+            </div>
+            
+            <div class="test-list">
+              <div v-for="(suite, suiteIndex) in testResults.suites" :key="suiteIndex" class="test-suite">
+                <h4 class="suite-name">{{ suite.name }}</h4>
+                <div class="suite-tests">
+                  <div v-for="(test, testIndex) in suite.tests" :key="testIndex" class="test-item" :class="test.status">
+                    <span class="test-status-icon">{{ test.status === 'PASS' ? '✓' : '✗' }}</span>
+                    <span class="test-name">{{ test.name }}</span>
+                    <span class="test-duration">{{ test.duration }}s</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="no-results">
+            <p>Результаты тестов не доступны</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
@@ -191,6 +250,9 @@ const stats = ref({
 
 const logs = ref([])
 const loadingLogs = ref(false)
+const runningTests = ref(false)
+const testResults = ref(null)
+const showTestModal = ref(false)
 
 const statsData = computed(() => [
   {
@@ -338,6 +400,21 @@ const formatLogTime = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+const runTests = async () => {
+  runningTests.value = true
+  showTestModal.value = true
+  
+  try {
+    const response = await axios.get('http://localhost:8001/api/admin/tests/run')
+    testResults.value = response.data
+  } catch (error) {
+    console.error('Ошибка выполнения тестов:', error)
+    testResults.value = { error: 'Ошибка выполнения тестов' }
+  } finally {
+    runningTests.value = false
+  }
 }
 
 onMounted(() => {
@@ -697,6 +774,220 @@ onMounted(() => {
   }
 }
 
+.btn-run-tests {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #34C759;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-run-tests:hover:not(:disabled) {
+  background: #30D158;
+  transform: translateY(-1px);
+}
+
+.btn-run-tests:disabled {
+  background: #8E8E93;
+  cursor: not-allowed;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  padding: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1C1C1E;
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #8E8E93;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1C1C1E;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 20px;
+}
+
+.spinner-large {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #007AFF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.test-results {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.summary {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-item.passed {
+  background: rgba(52, 199, 89, 0.1);
+  border: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.summary-item.assertions {
+  background: rgba(0, 122, 255, 0.1);
+  border: 1px solid rgba(0, 122, 255, 0.2);
+}
+
+.summary-item.duration {
+  background: rgba(175, 82, 222, 0.1);
+  border: 1px solid rgba(175, 82, 222, 0.2);
+}
+
+.summary-label {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.summary-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1C1C1E;
+}
+
+.test-suite {
+  margin-bottom: 24px;
+}
+
+.suite-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1C1C1E;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.suite-tests {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.test-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.test-item.PASS {
+  border-left: 3px solid #34C759;
+}
+
+.test-item.FAIL {
+  border-left: 3px solid #FF3B30;
+}
+
+.test-status-icon {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.test-item.PASS .test-status-icon {
+  color: #34C759;
+}
+
+.test-item.FAIL .test-status-icon {
+  color: #FF3B30;
+}
+
+.test-name {
+  flex: 1;
+  font-size: 14px;
+  color: #1C1C1E;
+}
+
+.test-duration {
+  font-size: 12px;
+  color: #6B7280;
+}
+
 @media (max-width: 768px) {
   .dashboard {
     padding: 0 var(--spacing-md);
@@ -705,6 +996,13 @@ onMounted(() => {
   .dashboard-header {
     margin-bottom: var(--spacing-lg);
     padding-top: var(--spacing-md);
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .btn-run-tests {
+    width: 100%;
+    justify-content: center;
   }
   
   .title-text {

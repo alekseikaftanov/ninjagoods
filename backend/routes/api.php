@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\TelegramAuthController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\B2BOrderController;
+use App\Http\Controllers\Api\Admin\TestController;
 
 // Публичные API маршруты
 Route::post('/auth/telegram', [AuthController::class, 'telegram']);
@@ -88,6 +89,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders', [AdminOrderController::class, 'index']);
         Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
         Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy']);
+        
+        // Тесты
+        Route::get('/tests/run', [TestController::class, 'run']);
         
         // Логи администратора
         Route::get('/admin-logs', [AdminActionLogController::class, 'index']);
