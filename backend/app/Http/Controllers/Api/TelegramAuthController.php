@@ -90,9 +90,9 @@ class TelegramAuthController extends Controller
         // Generate JWT token
         $token = $this->generateJWT($user);
 
-        // Check if user needs to choose role or register organization
+        // Check if user needs to choose role or create/join restaurant
         $needsRoleSelection = is_null($user->role);
-        $needsOrganization = $user->needsOrganization();
+        $needsRestaurant = $user->needsRestaurant();
 
         return response()->json([
             'success' => true,
@@ -100,7 +100,7 @@ class TelegramAuthController extends Controller
                 'user' => $user,
                 'token' => $token,
                 'needs_role_selection' => $needsRoleSelection,
-                'needs_organization' => $needsOrganization,
+                'needs_restaurant' => $needsRestaurant,
             ],
         ]);
     }
@@ -126,13 +126,13 @@ class TelegramAuthController extends Controller
         $user->role = $request->role;
         $user->save();
 
-        $needsOrganization = $user->needsOrganization();
+        $needsRestaurant = $user->needsRestaurant();
 
         return response()->json([
             'success' => true,
             'data' => [
                 'user' => $user,
-                'needs_organization' => $needsOrganization,
+                'needs_restaurant' => $needsRestaurant,
             ],
         ]);
     }

@@ -10,7 +10,7 @@ class Invite extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'organization_id',
+        'restaurant_id',
         'token',
         'created_by',
         'expires_at',
@@ -23,11 +23,11 @@ class Invite extends Model
     ];
 
     /**
-     * Get the organization that this invite belongs to.
+     * Get the restaurant that this invite belongs to.
      */
-    public function organization(): BelongsTo
+    public function restaurant(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Restaurant::class);
     }
 
     /**

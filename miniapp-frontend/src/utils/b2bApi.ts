@@ -45,8 +45,8 @@ interface TelegramAuthData {
   hash: string
 }
 
-// Organization Types
-interface Organization {
+// Restaurant Types
+interface Restaurant {
   id: number
   name: string
   legal_name: string
@@ -56,30 +56,28 @@ interface Organization {
   address_legal: string
   address_actual: string
   phone: string
-  email: string
-  comment?: string
   created_by: number
   created_at: string
   updated_at: string
+  employees?: any[]
+  buyer?: any
 }
 
-interface CreateOrganizationData {
+interface CreateRestaurantData {
   name: string
   legal_name: string
   inn: string
-  kpp: string
+  kpp?: string
   ogrn: string
   address_legal: string
   address_actual: string
   phone: string
-  email: string
-  comment?: string
 }
 
 // Order Types
 interface Order {
   id: number
-  organization_id: number
+  restaurant_id: number
   buyer_id: number | null
   status: 'draft' | 'submitted'
   submitted_at: string | null
@@ -87,6 +85,7 @@ interface Order {
   created_at: string
   updated_at: string
   orderItems?: OrderItem[]
+  restaurant?: Restaurant
 }
 
 interface OrderItem {
@@ -123,21 +122,37 @@ export const b2bAPI = {
     },
   },
 
-  organization: {
-    create: async (data: CreateOrganizationData) => {
-      const response = await b2bApi.post('/organization', data)
+  restaurants: {
+    getAll: async (): Promise<Restaurant[]> => {
+      const response = await b2bApi.get('/restaurants')
+      return response.data.data
+    },
+    create: async (data: CreateRestaurantData): Promise<Restaurant> => {
+      const response = await b2bApi.post('/restaurants', data)
+      return response.data.data
+    },
+    getById: async (id: number): Promise<Restaurant> => {
+      const response = await b2bApi.get(`/restaurants/${id}`)
+      return response.data.data
+    },
+    update: async (id: number, data: Partial<CreateRestaurantData>): Promise<Restaurant> => {
+      const response = await b2bApi.put(`/restaurants/${id}`, data)
+      return response.data.data
+    },
+    delete: async (id: number) => {
+      const response = await b2bApi.delete(`/restaurants/${id}`)
       return response.data
     },
-    get: async () => {
-      const response = await b2bApi.get('/organization')
-      return response.data
+    getEmployees: async (id: number) => {
+      const response = await b2bApi.get(`/restaurants/${id}/employees`)
+      return response.data.data
     },
-    update: async (data: Partial<CreateOrganizationData>) => {
-      const response = await b2bApi.put('/organization', data)
-      return response.data
+    addEmployee: async (id: number, userId: number) => {
+      const response = await b2bApi.post(`/restaurants/${id}/employees`, { user_id: userId })
+      return response.data.data
     },
-    generateInvite: async () => {
-      const response = await b2bApi.post('/organization/invite')
+    removeEmployee: async (id: number, employeeId: number) => {
+      const response = await b2bApi.delete(`/restaurants/${id}/employees/${employeeId}`)
       return response.data
     },
   },
@@ -150,6 +165,17 @@ export const b2bAPI = {
     join: async (token: string) => {
       const response = await b2bApi.post('/invites/join', { token })
       return response.data
+    },
+    generate: async (restaurantId: number, expiresInDays?: number) => {
+      const response = await b2bApi.post('/invites/generate', {
+        restaurant_id: restaurantId,
+        expires_in_days: expiresInDays,
+      })
+      return response.data
+    },
+    getAll: async (restaurantId: number) => {
+      const response = await b2bApi.get(`/invites?restaurant_id=${restaurantId}`)
+      return response.data.data
     },
   },
 
@@ -181,5 +207,5 @@ export const b2bAPI = {
   },
 }
 
-export type { Organization, CreateOrganizationData, Order, OrderItem, CreateOrderItemData }
+export type { Restaurant, CreateRestaurantData, Order, OrderItem, CreateOrderItemData }
 

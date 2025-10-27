@@ -4,7 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -28,7 +28,6 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'role',
-        'organization_id',
     ];
 
     /**
@@ -55,11 +54,20 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the organization that the user belongs to.
+     * Рестораны, созданные закупщиком
      */
-    public function organization(): BelongsTo
+    public function ownedRestaurants(): HasMany
     {
-        return $this->belongsTo(Organization::class);
+        return $this->hasMany(Restaurant::class, 'created_by');
+    }
+
+    /**
+     * Рестораны, где пользователь работает сотрудником (многие-ко-многим)
+     */
+    public function restaurants(): BelongsToMany
+    {
+        return $this->belongsToMany(Restaurant::class, 'restaurant_employees')
+            ->withTimestamps();
     }
 
     /**
@@ -103,10 +111,34 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user needs organization (buyers only).
+     * Check if user needs restaurant (buyers/employees only).
      */
-    public function needsOrganization(): bool
+    public function needsRestaurant(): bool
     {
-        return $this->isBuyer() && is_null($this->organization_id);
+        if ($this->isBuyer()) {
+            return $this->ownedRestaurants()->count() === 0;
+        }
+        
+        if ($this->isEmployee()) {
+            return $this->restaurants()->count() === 0;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get all restaurants user has access to (owned + employed)
+     */
+    public function allRestaurants()
+    {
+        if ($this->isBuyer()) {
+            return $this->ownedRestaurants;
+        }
+        
+        if ($this->isEmployee()) {
+            return $this->restaurants;
+        }
+        
+        return collect();
     }
 }

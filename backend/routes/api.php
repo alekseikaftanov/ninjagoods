@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\Admin\ProductCsvController as AdminProductCsvContro
 use App\Http\Controllers\Api\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Api\Admin\AdminLogController as AdminActionLogController;
 use App\Http\Controllers\Api\TelegramAuthController;
-use App\Http\Controllers\Api\OrganizationController;
+use App\Http\Controllers\Api\RestaurantController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\B2BOrderController;
 use App\Http\Controllers\Api\Admin\TestController;
@@ -33,14 +33,20 @@ Route::middleware('jwt.auth')->group(function () {
     Route::post('/auth/role', [TelegramAuthController::class, 'setRole']);
     Route::get('/auth/me', [TelegramAuthController::class, 'me']);
     
-    // Organization routes (for buyers and employees)
-    Route::get('/organization', [OrganizationController::class, 'show']);
-    Route::post('/organization', [OrganizationController::class, 'store']);
-    Route::put('/organization', [OrganizationController::class, 'update']);
-    Route::post('/organization/invite', [OrganizationController::class, 'generateInvite']);
+    // Restaurant routes (for buyers and employees)
+    Route::get('/restaurants', [RestaurantController::class, 'index']);
+    Route::post('/restaurants', [RestaurantController::class, 'store']);
+    Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
+    Route::put('/restaurants/{id}', [RestaurantController::class, 'update']);
+    Route::delete('/restaurants/{id}', [RestaurantController::class, 'destroy']);
+    Route::get('/restaurants/{id}/employees', [RestaurantController::class, 'employees']);
+    Route::post('/restaurants/{id}/employees', [RestaurantController::class, 'addEmployee']);
+    Route::delete('/restaurants/{id}/employees/{employeeId}', [RestaurantController::class, 'removeEmployee']);
     
     // Invite routes
-    Route::post('/invites/join', [InviteController::class, 'join']);
+    Route::get('/invites', [InviteController::class, 'index']); // Get invites for restaurant
+    Route::post('/invites/generate', [InviteController::class, 'generate']); // Generate invite
+    Route::post('/invites/join', [InviteController::class, 'join']); // Join restaurant
     
     // Order routes (all authenticated users)
     Route::get('/orders', [OrderController::class, 'index']); // Для customer - простой список заказов

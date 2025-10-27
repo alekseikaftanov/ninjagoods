@@ -12,7 +12,7 @@ class Order extends Model
         'user_id',
         'items',
         'total',
-        'organization_id',
+        'restaurant_id',
         'buyer_id',
         'status',
         'submitted_at',
@@ -33,11 +33,11 @@ class Order extends Model
     }
 
     /**
-     * Get the organization that owns the order.
+     * Get the restaurant that owns the order.
      */
-    public function organization(): BelongsTo
+    public function restaurant(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Restaurant::class);
     }
 
     /**
