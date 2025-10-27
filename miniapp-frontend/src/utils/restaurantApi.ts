@@ -181,27 +181,27 @@ export const API = {
 
   orders: {
     getAll: async (): Promise<Order[]> => {
-      const response = await apiClient.get('/orders')
+      const response = await apiClient.get('/b2b/orders')
       return response.data.data
     },
     getById: async (id: number): Promise<Order> => {
-      const response = await apiClient.get(`/orders/${id}`)
+      const response = await apiClient.get(`/b2b/orders/${id}`)
       return response.data.data
     },
     create: async (restaurantId: number): Promise<Order> => {
-      const response = await apiClient.post('/orders', { restaurant_id: restaurantId })
+      const response = await apiClient.post('/b2b/orders', { restaurant_id: restaurantId })
       return response.data.data
     },
     addItem: async (orderId: number, item: CreateOrderItemData): Promise<OrderItem> => {
-      const response = await apiClient.post(`/orders/${orderId}/items`, item)
+      const response = await apiClient.post(`/b2b/orders/${orderId}/items`, item)
       return response.data.data
     },
     deleteItem: async (orderId: number, itemId: number) => {
-      const response = await apiClient.delete(`/orders/${orderId}/items/${itemId}`)
+      const response = await apiClient.delete(`/b2b/orders/${orderId}/items/${itemId}`)
       return response.data
     },
     submit: async (orderId: number) => {
-      const response = await apiClient.post(`/orders/${orderId}/submit`)
+      const response = await apiClient.post(`/b2b/orders/${orderId}/submit`)
       return response.data.data
     },
   },
