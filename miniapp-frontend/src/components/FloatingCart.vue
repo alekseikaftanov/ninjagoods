@@ -1,19 +1,16 @@
 <template>
   <div class="floating-cart" :class="{ 'has-items': cartStore.totalItems > 0 }">
-    <!-- Fixed Cart Header -->
-    <div class="cart-header" @click="toggleCart">
-      <div class="cart-icon-container">
-        <div class="cart-icon">
-          <span class="cart-emoji">🛒</span>
-          <span v-if="cartStore.totalItems > 0" class="cart-badge">{{ cartStore.totalItems }}</span>
-        </div>
-        <div class="cart-info">
-          <div class="cart-title">Корзина</div>
-          <div class="cart-total">{{ cartStore.totalPrice }} ₽</div>
-        </div>
+    <!-- Cart Info Header -->
+    <div class="cart-info-header">
+      <div class="cart-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 18C5.9 18 5.01 18.9 5.01 20C5.01 21.1 5.9 22 7 22C8.1 22 9 21.1 9 20C9 18.9 8.1 18 7 18ZM1 2V4H3L6.6 11.59L5.25 14.04C5.09 14.32 5 14.65 5 15C5 16.1 5.9 17 7 17H19V15H7.42C7.28 15 7.17 14.89 7.17 14.75L7.2 14.63L8.1 13H15.55C16.3 13 16.96 12.59 17.3 11.97L20.88 5.5C21.25 4.84 20.76 4 20 4H5.21L4.27 2M17 18C15.9 18 15.01 18.9 15.01 20C15.01 21.1 15.9 22 17 22C18.1 22 19 21.1 19 20C19 18.9 18.1 18 17 18Z" fill="currentColor"/>
+        </svg>
+        <span v-if="cartStore.totalItems > 0" class="cart-badge">{{ cartStore.totalItems }}</span>
       </div>
-      <div class="cart-arrow" v-if="cartStore.totalItems > 0">
-        <span>{{ isExpanded ? '▼' : '▲' }}</span>
+      <div class="cart-text">
+        <span class="cart-title">Корзина</span>
+        <span class="cart-total">{{ cartStore.totalPrice.toFixed(2) }} ₽</span>
       </div>
     </div>
     
@@ -60,11 +57,17 @@
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div v-if="!cartStore.totalItems" class="empty-cart">
-      <div class="empty-content">
-        <div class="empty-icon">🛒</div>
-        <div class="empty-text">Добавьте товары в заказ</div>
+    <!-- Action Button -->
+    <div class="cart-action">
+      <button 
+        v-if="cartStore.totalItems > 0" 
+        @click="checkout" 
+        class="btn-checkout"
+      >
+        Перейти к оформлению
+      </button>
+      <div v-else class="empty-state">
+        Добавьте товары, чтобы оформить заказ
       </div>
     </div>
   </div>
@@ -96,49 +99,40 @@ const checkout = () => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #F9FAFB;
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.05);
   z-index: 1000;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  backdrop-filter: blur(20px);
+  padding: 20px 32px;
+  height: auto;
+  min-height: 120px;
 }
 
-.floating-cart.has-items {
-  background: linear-gradient(180deg, #34C759 0%, #28B84A 100%);
-  color: white;
-}
-
-/* Cart Header */
-.cart-header {
+/* Cart Info Header */
+.cart-info-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.cart-header:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.cart-icon-container {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .cart-icon {
   position: relative;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(20px);
-  border-radius: 12px;
+  background: rgba(0, 122, 255, 0.1);
+  color: #007AFF;
+  border-radius: 8px;
   padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
 }
 
-.cart-emoji {
-  font-size: 20px;
+.cart-icon svg {
+  display: block;
 }
 
 .cart-badge {
@@ -157,45 +151,30 @@ const checkout = () => {
   font-weight: 600;
 }
 
-.cart-info {
+.cart-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex: 1;
+  padding-left: 12px;
 }
 
 .cart-title {
   font-size: 16px;
   font-weight: 600;
-  margin-bottom: 2px;
   color: #1C1C1E;
 }
 
 .cart-total {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 700;
   color: #1C1C1E;
+  margin-left: auto;
 }
 
-.floating-cart.has-items .cart-title,
-.floating-cart.has-items .cart-total {
-  color: white;
-}
-
-.cart-arrow {
-  font-size: 16px;
-  opacity: 0.7;
-  transition: transform 0.2s ease;
-}
-
-.cart-arrow:hover {
-  transform: scale(1.1);
-}
-
-/* Expanded Cart */
+/* Expanded Cart (hidden for now) */
 .cart-expanded {
-  background: #F9FAFB;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  max-height: 400px;
-  overflow-y: auto;
-  border-radius: 0 0 20px 20px;
+  display: none;
 }
 
 .cart-items {
@@ -354,28 +333,29 @@ const checkout = () => {
   margin-top: 12px;
 }
 
+/* Cart Action */
+.cart-action {
+  margin-top: 16px;
+}
+
 .btn-checkout {
   width: 100%;
-  background: #34C759;
+  background: linear-gradient(180deg, #34C759 0%, #28B84A 100%);
   color: white;
   border: none;
-  border-radius: 16px;
-  padding: 16px 20px;
-  font-size: 18px;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 17px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 8px rgba(52, 199, 89, 0.3);
+  text-align: center;
 }
 
 .btn-checkout:hover {
-  background: #30D158;
-  box-shadow: 0 0 16px rgba(52, 199, 89, 0.4);
-  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 12px rgba(52, 199, 89, 0.4);
 }
 
 .btn-checkout:active {
@@ -387,30 +367,14 @@ const checkout = () => {
 }
 
 /* Empty State */
-.empty-cart {
-  background: linear-gradient(180deg, #34C759 0%, #28B84A 100%);
-  color: white;
-  padding: 20px 24px;
+.empty-state {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  padding: 16px;
   text-align: center;
-  border-radius: 20px 20px 0 0;
-}
-
-.empty-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.empty-icon {
-  font-size: 32px;
-  opacity: 0.9;
-}
-
-.empty-text {
-  font-size: 16px;
+  color: #8E8E93;
   font-weight: 500;
-  opacity: 0.9;
+  font-size: 14px;
 }
 
 /* Animations */
@@ -434,16 +398,19 @@ const checkout = () => {
 
 /* Responsive */
 @media (max-width: 480px) {
-  .cart-header {
+  .floating-cart {
     padding: 16px 20px;
   }
   
   .cart-icon {
+    width: 32px;
+    height: 32px;
     padding: 6px;
   }
   
-  .cart-emoji {
-    font-size: 18px;
+  .cart-icon svg {
+    width: 20px;
+    height: 20px;
   }
   
   .cart-title {
@@ -451,46 +418,17 @@ const checkout = () => {
   }
   
   .cart-total {
-    font-size: 12px;
-  }
-  
-  .cart-items {
-    padding: 20px;
-    gap: 12px;
-  }
-  
-  .cart-item {
-    padding: 12px;
-  }
-  
-  .item-image {
-    width: 56px;
-    height: 56px;
-    margin-right: 12px;
-  }
-  
-  .item-name {
-    font-size: 14px;
-  }
-  
-  .item-details {
-    font-size: 12px;
-  }
-  
-  .btn-quantity,
-  .btn-remove {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-  }
-  
-  .cart-footer {
-    padding: 20px;
+    font-size: 16px;
   }
   
   .btn-checkout {
     font-size: 16px;
-    padding: 14px 18px;
+    padding: 12px;
+  }
+  
+  .empty-state {
+    font-size: 13px;
+    padding: 14px;
   }
 }
 </style>
