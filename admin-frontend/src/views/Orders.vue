@@ -189,8 +189,8 @@
                 @click="viewOrder(order)"
               >
                 <td class="order-id">#{{ order.id }}</td>
-                <td class="customer-name">{{ order.user.name }}</td>
-                <td class="customer-phone">{{ order.user.phone }}</td>
+                <td class="customer-name">{{ getUserName(order) }}</td>
+                <td class="customer-phone">{{ getUserPhone(order) }}</td>
                 <td class="order-items">
                   <div class="items-preview">
                     <span v-for="(item, index) in order.items.slice(0, 2)" :key="index" class="item-tag">
@@ -238,11 +238,19 @@
               <div class="detail-grid">
                 <div class="detail-item">
                   <label>Имя:</label>
-                  <span>{{ selectedOrder.user.name }}</span>
+                  <span>{{ getUserName(selectedOrder) }}</span>
                 </div>
                 <div class="detail-item">
                   <label>Телефон:</label>
-                  <span>{{ selectedOrder.user.phone }}</span>
+                  <span>{{ getUserPhone(selectedOrder) }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Email:</label>
+                  <span>{{ selectedOrder.buyer?.email || selectedOrder.organization?.email || '-' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Организация:</label>
+                  <span>{{ selectedOrder.organization?.name || '-' }}</span>
                 </div>
                 <div class="detail-item">
                   <label>Дата заказа:</label>
@@ -305,10 +313,22 @@ interface Order {
   items: OrderItem[]
   total: number
   created_at: string
-  user: {
+  user?: {
     id: number
     name: string
     phone: string
+  }
+  buyer?: {
+    id: number
+    first_name: string
+    last_name: string
+    email: string
+  }
+  organization?: {
+    id: number
+    name: string
+    phone: string
+    email: string
   }
 }
 
@@ -490,6 +510,26 @@ const viewOrder = (order: Order) => {
 
 const closeModal = () => {
   selectedOrder.value = null
+}
+
+const getUserName = (order: Order): string => {
+  if (order.user) {
+    return order.user.name
+  }
+  if (order.buyer) {
+    return `${order.buyer.first_name} ${order.buyer.last_name}`
+  }
+  return 'Неизвестный клиент'
+}
+
+const getUserPhone = (order: Order): string => {
+  if (order.user && order.user.phone) {
+    return order.user.phone
+  }
+  if (order.organization && order.organization.phone) {
+    return order.organization.phone
+  }
+  return '-'
 }
 </script>
 
