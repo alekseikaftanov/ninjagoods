@@ -92,7 +92,7 @@ class TelegramAuthController extends Controller
 
         // Check if user needs to choose role or register organization
         $needsRoleSelection = is_null($user->role);
-        $needsOrganization = $user->isBuyer() && is_null($user->organization_id);
+        $needsOrganization = $user->needsOrganization();
 
         return response()->json([
             'success' => true,
@@ -106,12 +106,12 @@ class TelegramAuthController extends Controller
     }
 
     /**
-     * Set user role (buyer or employee)
+     * Set user role (customer, buyer, or employee)
      */
     public function setRole(Request $request): JsonResponse
     {
         $request->validate([
-            'role' => 'required|in:buyer,employee',
+            'role' => 'required|in:customer,buyer,employee',
         ]);
 
         $user = $request->user();
@@ -126,9 +126,14 @@ class TelegramAuthController extends Controller
         $user->role = $request->role;
         $user->save();
 
+        $needsOrganization = $user->needsOrganization();
+
         return response()->json([
             'success' => true,
-            'data' => $user,
+            'data' => [
+                'user' => $user,
+                'needs_organization' => $needsOrganization,
+            ],
         ]);
     }
 

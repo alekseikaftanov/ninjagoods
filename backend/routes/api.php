@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OrderController;
@@ -19,43 +18,45 @@ use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\B2BOrderController;
 use App\Http\Controllers\Api\Admin\TestController;
 
-// Публичные API маршруты
-Route::post('/auth/telegram', [AuthController::class, 'telegram']);
+// Публичные API маршруты (доступны всем)
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
-Route::post('/orders', [OrderController::class, 'store']);
 
-// Telegram B2B Auth routes
-Route::prefix('b2b')->group(function () {
-    // Public routes
-    Route::post('/auth/telegram', [TelegramAuthController::class, 'authenticate']);
-    Route::get('/invites/validate', [InviteController::class, 'validateToken']);
+// Telegram Auth - единая точка входа для всех клиентов
+Route::post('/auth/telegram', [TelegramAuthController::class, 'authenticate']);
+Route::get('/invites/validate', [InviteController::class, 'validateToken']);
+
+// Защищенные маршруты (требуют JWT)
+Route::middleware('jwt.auth')->group(function () {
+    // User profile and role management
+    Route::post('/auth/role', [TelegramAuthController::class, 'setRole']);
+    Route::get('/auth/me', [TelegramAuthController::class, 'me']);
     
-    // Protected routes
-    Route::middleware('jwt.auth')->group(function () {
-        Route::post('/auth/role', [TelegramAuthController::class, 'setRole']);
-        Route::get('/auth/me', [TelegramAuthController::class, 'me']);
-        
-        // Organization routes
-        Route::get('/organization', [OrganizationController::class, 'show']);
-        Route::post('/organization', [OrganizationController::class, 'store']);
-        Route::put('/organization', [OrganizationController::class, 'update']);
-        Route::post('/organization/invite', [OrganizationController::class, 'generateInvite']);
-        
-        // Invite routes
-        Route::post('/invites/join', [InviteController::class, 'join']);
-        
-        // Order routes
-        Route::get('/orders', [B2BOrderController::class, 'index']);
-        Route::post('/orders', [B2BOrderController::class, 'store']);
-        Route::get('/orders/{order}', [B2BOrderController::class, 'show']);
-        Route::post('/orders/{order}/items', [B2BOrderController::class, 'addItem']);
-        Route::delete('/orders/{order}/items/{item}', [B2BOrderController::class, 'deleteItem']);
+    // Organization routes (for buyers and employees)
+    Route::get('/organization', [OrganizationController::class, 'show']);
+    Route::post('/organization', [OrganizationController::class, 'store']);
+    Route::put('/organization', [OrganizationController::class, 'update']);
+    Route::post('/organization/invite', [OrganizationController::class, 'generateInvite']);
+    
+    // Invite routes
+    Route::post('/invites/join', [InviteController::class, 'join']);
+    
+    // Order routes (all authenticated users)
+    Route::get('/orders', [OrderController::class, 'index']); // Для customer - простой список заказов
+    Route::post('/orders', [OrderController::class, 'store']); // Для customer - создание простых заказов
+    
+    // B2B Order routes (for buyers and employees)
+    Route::prefix('b2b/orders')->group(function () {
+        Route::get('/', [B2BOrderController::class, 'index']);
+        Route::post('/', [B2BOrderController::class, 'store']);
+        Route::get('/{order}', [B2BOrderController::class, 'show']);
+        Route::post('/{order}/items', [B2BOrderController::class, 'addItem']);
+        Route::delete('/{order}/items/{item}', [B2BOrderController::class, 'deleteItem']);
         
         // Buyer-only routes
         Route::middleware('role:buyer')->group(function () {
-            Route::post('/orders/{order}/submit', [B2BOrderController::class, 'submit']);
+            Route::post('/{order}/submit', [B2BOrderController::class, 'submit']);
         });
     });
 });

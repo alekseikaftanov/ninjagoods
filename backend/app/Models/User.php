@@ -79,7 +79,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is a buyer.
+     * Check if user is a buyer (B2B).
      */
     public function isBuyer(): bool
     {
@@ -87,10 +87,26 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is an employee.
+     * Check if user is an employee (B2B).
      */
     public function isEmployee(): bool
     {
         return $this->role === 'employee';
+    }
+
+    /**
+     * Check if user is a regular customer (B2C).
+     */
+    public function isCustomer(): bool
+    {
+        return $this->role === 'customer';
+    }
+
+    /**
+     * Check if user needs organization (buyers only).
+     */
+    public function needsOrganization(): bool
+    {
+        return $this->isBuyer() && is_null($this->organization_id);
     }
 }
