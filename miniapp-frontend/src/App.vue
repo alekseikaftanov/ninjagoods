@@ -35,7 +35,7 @@ onMounted(async () => {
   --shadow-medium: rgba(0, 0, 0, 0.15);
   
   /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   --font-size-large: 28px;
   --font-size-medium: 20px;
   --font-size-regular: 17px;

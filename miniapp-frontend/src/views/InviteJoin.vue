@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { b2bAPI } from '../../utils/b2bApi'
+import { API } from '../utils/restaurantApi'
 
 const router = useRouter()
 
@@ -60,7 +60,7 @@ const joinOrganization = async () => {
   error.value = null
 
   try {
-    const response = await b2bAPI.invite.join(inviteToken.value)
+    const response = await API.invite.join(inviteToken.value)
     
     if (response.success) {
       router.push('/orders')

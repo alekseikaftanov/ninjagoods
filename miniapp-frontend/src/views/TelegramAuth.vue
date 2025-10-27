@@ -81,12 +81,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useB2BAuthStore } from '../../stores/b2bAuth'
-import { getTelegramUser, getInitData } from '../../utils/telegram'
+import { useAuthStore } from '../stores/mainAuth'
+import { getTelegramUser, getInitData } from '../utils/telegram'
 
 const isDevMode = import.meta.env.DEV
 const router = useRouter()
-const authStore = useB2BAuthStore()
+const authStore = useAuthStore()
 
 const telegramUser = ref<any>(null)
 const error = ref<string | null>(null)
@@ -166,8 +166,6 @@ const handleAuth = async () => {
     // Check if user needs to complete registration
     if (!authStore.hasRole) {
       router.push('/role-selection')
-    } else if (authStore.isBuyer && !authStore.hasOrganization) {
-      router.push('/organization')
     } else {
       router.push('/')
     }

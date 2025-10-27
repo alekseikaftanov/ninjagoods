@@ -7,6 +7,18 @@
       </div>
 
       <div class="role-cards">
+        <div class="role-card" @click="selectRole('customer')">
+          <div class="role-icon customer">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <h3>Покупатель</h3>
+          <p>Покупайте товары для себя</p>
+          <button class="card-button" :disabled="isLoading">Выбрать</button>
+        </div>
+
         <div class="role-card" @click="selectRole('buyer')">
           <div class="role-icon buyer">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -43,15 +55,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useB2BAuthStore } from '../../stores/b2bAuth'
+import { useAuthStore } from '../stores/mainAuth'
 
 const router = useRouter()
-const authStore = useB2BAuthStore()
+const authStore = useAuthStore()
 
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
-const selectRole = async (role: 'buyer' | 'employee') => {
+const selectRole = async (role: 'customer' | 'buyer' | 'employee') => {
   isLoading.value = true
   error.value = null
 
@@ -59,10 +71,13 @@ const selectRole = async (role: 'buyer' | 'employee') => {
     const success = await authStore.setRole(role)
     
     if (success) {
-      if (role === 'buyer') {
-        router.push('/organization')
-      } else {
+      // После выбора роли:
+      // - Покупатель/Закупщик идут в главное меню (создание ресторанов - в настройках для закупщика)
+      // - Сотрудник идет на страницу ввода инвайта (нужно присоединиться к ресторану)
+      if (role === 'employee') {
         router.push('/invite')
+      } else {
+        router.push('/')
       }
     } else {
       error.value = authStore.error || 'Не удалось установить роль'
@@ -136,6 +151,11 @@ const selectRole = async (role: 'buyer' | 'employee') => {
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
+}
+
+.role-icon.customer {
+  background: linear-gradient(135deg, #007AFF 0%, #0051D0 100%);
+  color: white;
 }
 
 .role-icon.buyer {

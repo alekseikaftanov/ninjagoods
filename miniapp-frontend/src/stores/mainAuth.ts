@@ -1,21 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { b2bAPI } from '../utils/b2bApi'
+import { API } from '../utils/restaurantApi'
 
-export type B2BUserRole = 'customer' | 'buyer' | 'employee' | null
+export type UserRole = 'customer' | 'buyer' | 'employee' | null
 
-export interface B2BUser {
+export interface User {
   id: number
   telegram_id: number
   first_name: string
   last_name: string
   username: string
-  role: B2BUserRole
-  organization_id: number | null
+  role: UserRole
 }
 
-export const useB2BAuthStore = defineStore('b2bAuth', () => {
-  const user = ref<B2BUser | null>(null)
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref<User | null>(null)
   const token = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -25,7 +24,6 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
   const isBuyer = computed(() => user.value?.role === 'buyer')
   const isEmployee = computed(() => user.value?.role === 'employee')
   const hasRole = computed(() => !!user.value?.role)
-  const hasOrganization = computed(() => !!user.value?.organization_id)
 
   // Authenticate with Telegram
   const authenticateWithTelegram = async (telegramData: {
@@ -41,7 +39,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
     error.value = null
 
     try {
-      const response = await b2bAPI.auth.telegram(telegramData)
+      const response = await API.auth.telegram(telegramData)
       
       if (response.success) {
         token.value = response.data.token
@@ -52,7 +50,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
       
       throw new Error('Authentication failed')
     } catch (err) {
-      console.error('B2B Auth error:', err)
+      console.error('Auth error:', err)
       error.value = err instanceof Error ? err.message : 'Authentication error'
       return false
     } finally {
@@ -66,7 +64,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
     error.value = null
 
     try {
-      const response = await b2bAPI.auth.setRole(role)
+      const response = await API.auth.setRole(role)
       
       if (response.success) {
         user.value = response.data.user
@@ -89,7 +87,7 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
     error.value = null
 
     try {
-      const response = await b2bAPI.auth.me()
+      const response = await API.auth.me()
       
       if (response.success) {
         user.value = response.data
@@ -133,7 +131,6 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
     isBuyer,
     isEmployee,
     hasRole,
-    hasOrganization,
     authenticateWithTelegram,
     setRole,
     getCurrentUser,
@@ -141,4 +138,3 @@ export const useB2BAuthStore = defineStore('b2bAuth', () => {
     logout,
   }
 })
-

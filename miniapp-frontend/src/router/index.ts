@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { useB2BAuthStore } from '../stores/b2bAuth'
+import { useAuthStore as useOldAuthStore } from '../stores/auth'
+import { useAuthStore } from '../stores/mainAuth'
 import Home from '../views/Home.vue'
 import Categories from '../views/Categories.vue'
 import Products from '../views/Products.vue'
@@ -8,8 +8,8 @@ import ProductDetail from '../views/ProductDetail.vue'
 import Cart from '../views/Cart.vue'
 import Checkout from '../views/Checkout.vue'
 import OrderSuccess from '../views/OrderSuccess.vue'
-import TelegramAuth from '../views/b2b/TelegramAuth.vue'
-import RoleSelection from '../views/b2b/RoleSelection.vue'
+import TelegramAuth from '../views/TelegramAuth.vue'
+import RoleSelection from '../views/RoleSelection.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -68,31 +68,25 @@ const router = createRouter({
       path: '/role-selection',
       name: 'RoleSelection',
       component: RoleSelection,
-      meta: { requiresB2BAuth: true },
-    },
-    {
-      path: '/organization',
-      name: 'Organization',
-      component: () => import('../views/b2b/OrganizationRegistration.vue'),
-      meta: { requiresB2BAuth: true, requiresBuyer: true },
+      meta: { requiresAuth: true },
     },
     {
       path: '/invite',
       name: 'Invite',
-      component: () => import('../views/b2b/InviteJoin.vue'),
-      meta: { requiresB2BAuth: true, requiresEmployee: true },
+      component: () => import('../views/InviteJoin.vue'),
+      meta: { requiresAuth: true, requiresEmployee: true },
     },
     {
       path: '/orders',
       name: 'Orders',
-      component: () => import('../views/b2b/BuyerOrders.vue'),
-      meta: { requiresB2BAuth: true },
+      component: () => import('../views/Orders.vue'),
+      meta: { requiresAuth: true },
     },
     {
-      path: '/organization/management',
-      name: 'OrganizationManagement',
-      component: () => import('../views/b2b/OrganizationManagement.vue'),
-      meta: { requiresB2BAuth: true, requiresBuyer: true },
+      path: '/restaurant/management',
+      name: 'RestaurantManagement',
+      component: () => import('../views/RestaurantManagement.vue'),
+      meta: { requiresAuth: true, requiresBuyer: true },
     },
   ],
 })
@@ -100,37 +94,23 @@ const router = createRouter({
 // Навигационные хуки для Telegram WebApp
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  const b2bAuthStore = useB2BAuthStore()
   
-  // Main app routes require B2B authentication
+  // Main app routes require authentication
   if (to.meta.requiresAuth) {
-    if (!b2bAuthStore.isAuthenticated) {
-      next('/login')
-      return
-    }
-  }
-  
-  // Organization routes protection
-  if (to.meta.requiresB2BAuth) {
-    if (!b2bAuthStore.isAuthenticated) {
+    if (!authStore.isAuthenticated) {
       next('/login')
       return
     }
     
-    if (to.meta.requiresBuyer && !b2bAuthStore.isBuyer) {
+    if (to.meta.requiresBuyer && !authStore.isBuyer) {
       next('/role-selection')
       return
     }
     
-    if (to.meta.requiresEmployee && !b2bAuthStore.isEmployee) {
+    if (to.meta.requiresEmployee && !authStore.isEmployee) {
       next('/role-selection')
       return
     }
-  }
-  
-  // Regular routes authentication (deprecated, kept for compatibility)
-  if (!authStore.isAuthenticated) {
-    authStore.authenticateWithTelegram()
   }
   
   next()

@@ -40,7 +40,7 @@ api.interceptors.response.use(
 
 // API для аутентификации
 export const authAPI = {
-  // Регистрация/логин через Telegram (новая B2B система с JWT)
+  // Регистрация/логин через Telegram (с JWT)
   telegram: async (telegramData: {
     id: number
     first_name: string

@@ -111,14 +111,14 @@ import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCatalogStore } from '../stores/catalog'
 import { useCartStore } from '../stores/cart'
-import { useB2BAuthStore } from '../stores/b2bAuth'
+import { useAuthStore } from '../stores/mainAuth'
 import FloatingCart from '../components/FloatingCart.vue'
 import type { Product } from '../types'
 
 const router = useRouter()
 const catalogStore = useCatalogStore()
 const cartStore = useCartStore()
-const b2bAuthStore = useB2BAuthStore()
+const authStore = useAuthStore()
 
 const allProducts = computed(() => catalogStore.products)
 
@@ -165,11 +165,11 @@ const decreaseQuantity = (product: Product) => {
 }
 
 const goToOrganizationManagement = () => {
-  router.push('/organization/management')
+  router.push('/restaurant/management')
 }
 
 const handleLogout = () => {
-  b2bAuthStore.logout()
+  authStore.logout()
   router.push('/login')
 }
 
@@ -259,34 +259,6 @@ onMounted(() => {
   font-size: 24px;
 }
 
-.b2b-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  border-radius: 12px;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.b2b-toggle svg {
-  width: 18px;
-  height: 18px;
-}
-
-.b2b-toggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
-}
-
-.b2b-toggle:active {
-  transform: translateY(0);
-}
 
 .nav-menu {
   display: flex;

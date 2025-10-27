@@ -51,8 +51,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { b2bAPI } from '../../utils/b2bApi'
-import type { Order } from '../../utils/b2bApi'
+import { API } from '../utils/restaurantApi'
+import type { Order } from '../utils/restaurantApi'
 
 const router = useRouter()
 
@@ -63,7 +63,7 @@ const loadOrders = async () => {
   isLoading.value = true
   
   try {
-    const data = await b2bAPI.orders.getAll()
+    const data = await API.orders.getAll()
     orders.value = data
   } catch (error) {
     console.error('Failed to load orders:', error)
@@ -76,7 +76,7 @@ const createNewOrder = async () => {
   isLoading.value = true
   
   try {
-    const newOrder = await b2bAPI.orders.create()
+    const newOrder = await API.orders.create()
     router.push(`/orders/${newOrder.id}`)
   } catch (error) {
     console.error('Failed to create order:', error)

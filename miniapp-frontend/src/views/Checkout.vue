@@ -103,15 +103,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
-import { useB2BAuthStore } from '../stores/b2bAuth'
-import { b2bAPI } from '../utils/b2bApi'
+import { useAuthStore } from '../stores/mainAuth'
+import { API } from '../utils/restaurantApi'
 import axios from 'axios'
 
 const router = useRouter()
 const cartStore = useCartStore()
-const b2bAuthStore = useB2BAuthStore()
+const authStore = useAuthStore()
 
-const user = computed(() => b2bAuthStore.user)
+const user = computed(() => authStore.user)
 const organization = ref(null)
 
 const orderData = ref({
@@ -134,19 +134,19 @@ const submitOrder = async () => {
   isSubmitting.value = true
 
   try {
-    // Create order using B2B API
-    const order = await b2bAPI.orders.create()
+    // Create order using API
+    const order = await API.orders.create()
     
     // Add items to order
     for (const item of cartStore.items) {
-      await b2bAPI.orders.addItem(order.id, {
+      await API.orders.addItem(order.id, {
         product_id: item.product.id,
         quantity: item.quantity,
       })
     }
     
     // Submit order
-    const submittedOrder = await b2bAPI.orders.submit(order.id)
+    const submittedOrder = await API.orders.submit(order.id)
 
     // Очищаем корзину
     cartStore.clearCart()
@@ -164,10 +164,9 @@ const submitOrder = async () => {
 }
 
 const loadOrganization = async () => {
-  if (!b2bAuthStore.hasOrganization) return
-  
+  // Organization logic removed - using restaurants now
   try {
-    const response = await b2bAPI.organization.get()
+    // TODO: Load restaurant data if needed
     if (response.success) {
       organization.value = response.data
     }

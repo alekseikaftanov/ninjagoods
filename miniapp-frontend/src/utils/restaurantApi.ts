@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const API_BASE_URL = 'http://localhost:8000/api'
 
-const b2bApi = axios.create({
+const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ const b2bApi = axios.create({
 })
 
 // Add JWT token to requests
-b2bApi.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('jwt_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -19,17 +19,17 @@ b2bApi.interceptors.request.use((config) => {
 })
 
 // Handle errors
-b2bApi.interceptors.response.use(
+apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('jwt_token')
       // Redirect to login
-      if (window.location.pathname !== '/b2b/login') {
-        window.location.href = '/b2b/login'
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
       }
     }
-    console.error('B2B API Error:', error.response?.data || error.message)
+    console.error('API Error:', error.response?.data || error.message)
     return Promise.reject(error)
   }
 )
@@ -106,102 +106,102 @@ interface CreateOrderItemData {
 }
 
 // API methods
-export const b2bAPI = {
+export const API = {
   auth: {
     telegram: async (data: TelegramAuthData) => {
-      const response = await b2bApi.post('/auth/telegram', data)
+      const response = await apiClient.post('/auth/telegram', data)
       return response.data
     },
     setRole: async (role: 'buyer' | 'employee' | 'customer') => {
-      const response = await b2bApi.post('/auth/role', { role })
+      const response = await apiClient.post('/auth/role', { role })
       return response.data
     },
     me: async () => {
-      const response = await b2bApi.get('/auth/me')
+      const response = await apiClient.get('/auth/me')
       return response.data
     },
   },
 
   restaurants: {
     getAll: async (): Promise<Restaurant[]> => {
-      const response = await b2bApi.get('/restaurants')
+      const response = await apiClient.get('/restaurants')
       return response.data.data
     },
     create: async (data: CreateRestaurantData): Promise<Restaurant> => {
-      const response = await b2bApi.post('/restaurants', data)
+      const response = await apiClient.post('/restaurants', data)
       return response.data.data
     },
     getById: async (id: number): Promise<Restaurant> => {
-      const response = await b2bApi.get(`/restaurants/${id}`)
+      const response = await apiClient.get(`/restaurants/${id}`)
       return response.data.data
     },
     update: async (id: number, data: Partial<CreateRestaurantData>): Promise<Restaurant> => {
-      const response = await b2bApi.put(`/restaurants/${id}`, data)
+      const response = await apiClient.put(`/restaurants/${id}`, data)
       return response.data.data
     },
     delete: async (id: number) => {
-      const response = await b2bApi.delete(`/restaurants/${id}`)
+      const response = await apiClient.delete(`/restaurants/${id}`)
       return response.data
     },
     getEmployees: async (id: number) => {
-      const response = await b2bApi.get(`/restaurants/${id}/employees`)
+      const response = await apiClient.get(`/restaurants/${id}/employees`)
       return response.data.data
     },
     addEmployee: async (id: number, userId: number) => {
-      const response = await b2bApi.post(`/restaurants/${id}/employees`, { user_id: userId })
+      const response = await apiClient.post(`/restaurants/${id}/employees`, { user_id: userId })
       return response.data.data
     },
     removeEmployee: async (id: number, employeeId: number) => {
-      const response = await b2bApi.delete(`/restaurants/${id}/employees/${employeeId}`)
+      const response = await apiClient.delete(`/restaurants/${id}/employees/${employeeId}`)
       return response.data
     },
   },
 
   invite: {
     validate: async (token: string) => {
-      const response = await b2bApi.get(`/invites/validate?token=${token}`)
+      const response = await apiClient.get(`/invites/validate?token=${token}`)
       return response.data
     },
     join: async (token: string) => {
-      const response = await b2bApi.post('/invites/join', { token })
+      const response = await apiClient.post('/invites/join', { token })
       return response.data
     },
     generate: async (restaurantId: number, expiresInDays?: number) => {
-      const response = await b2bApi.post('/invites/generate', {
+      const response = await apiClient.post('/invites/generate', {
         restaurant_id: restaurantId,
         expires_in_days: expiresInDays,
       })
       return response.data
     },
     getAll: async (restaurantId: number) => {
-      const response = await b2bApi.get(`/invites?restaurant_id=${restaurantId}`)
+      const response = await apiClient.get(`/invites?restaurant_id=${restaurantId}`)
       return response.data.data
     },
   },
 
   orders: {
     getAll: async (): Promise<Order[]> => {
-      const response = await b2bApi.get('/b2b/orders')
+      const response = await apiClient.get('/orders')
       return response.data.data
     },
     getById: async (id: number): Promise<Order> => {
-      const response = await b2bApi.get(`/b2b/orders/${id}`)
+      const response = await apiClient.get(`/orders/${id}`)
       return response.data.data
     },
     create: async (): Promise<Order> => {
-      const response = await b2bApi.post('/b2b/orders')
+      const response = await apiClient.post('/orders')
       return response.data.data
     },
     addItem: async (orderId: number, item: CreateOrderItemData): Promise<OrderItem> => {
-      const response = await b2bApi.post(`/b2b/orders/${orderId}/items`, item)
+      const response = await apiClient.post(`/orders/${orderId}/items`, item)
       return response.data.data
     },
     deleteItem: async (orderId: number, itemId: number) => {
-      const response = await b2bApi.delete(`/b2b/orders/${orderId}/items/${itemId}`)
+      const response = await apiClient.delete(`/orders/${orderId}/items/${itemId}`)
       return response.data
     },
     submit: async (orderId: number) => {
-      const response = await b2bApi.post(`/b2b/orders/${orderId}/submit`)
+      const response = await apiClient.post(`/orders/${orderId}/submit`)
       return response.data.data
     },
   },

@@ -13,7 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value && !!token.value)
 
-  // Автоматическая аутентификация через Telegram (новая B2B система)
+  // Автоматическая аутентификация через Telegram
   const authenticateWithTelegram = async () => {
     isLoading.value = true
     error.value = null
