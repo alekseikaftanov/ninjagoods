@@ -13,6 +13,10 @@ use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ProductCsvController as AdminProductCsvController;
 use App\Http\Controllers\Api\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Api\Admin\AdminLogController as AdminActionLogController;
+use App\Http\Controllers\Api\TelegramAuthController;
+use App\Http\Controllers\Api\OrganizationController;
+use App\Http\Controllers\Api\InviteController;
+use App\Http\Controllers\Api\B2BOrderController;
 
 // Публичные API маршруты
 Route::post('/auth/telegram', [AuthController::class, 'telegram']);
@@ -20,6 +24,40 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::post('/orders', [OrderController::class, 'store']);
+
+// Telegram B2B Auth routes
+Route::prefix('b2b')->group(function () {
+    // Public routes
+    Route::post('/auth/telegram', [TelegramAuthController::class, 'authenticate']);
+    Route::get('/invites/validate', [InviteController::class, 'validateToken']);
+    
+    // Protected routes
+    Route::middleware('jwt.auth')->group(function () {
+        Route::post('/auth/role', [TelegramAuthController::class, 'setRole']);
+        Route::get('/auth/me', [TelegramAuthController::class, 'me']);
+        
+        // Organization routes
+        Route::get('/organization', [OrganizationController::class, 'show']);
+        Route::post('/organization', [OrganizationController::class, 'store']);
+        Route::put('/organization', [OrganizationController::class, 'update']);
+        Route::post('/organization/invite', [OrganizationController::class, 'generateInvite']);
+        
+        // Invite routes
+        Route::post('/invites/join', [InviteController::class, 'join']);
+        
+        // Order routes
+        Route::get('/orders', [B2BOrderController::class, 'index']);
+        Route::post('/orders', [B2BOrderController::class, 'store']);
+        Route::get('/orders/{order}', [B2BOrderController::class, 'show']);
+        Route::post('/orders/{order}/items', [B2BOrderController::class, 'addItem']);
+        Route::delete('/orders/{order}/items/{item}', [B2BOrderController::class, 'deleteItem']);
+        
+        // Buyer-only routes
+        Route::middleware('role:buyer')->group(function () {
+            Route::post('/orders/{order}/submit', [B2BOrderController::class, 'submit']);
+        });
+    });
+});
 
 // Административные API маршруты
 Route::prefix('admin')->group(function () {

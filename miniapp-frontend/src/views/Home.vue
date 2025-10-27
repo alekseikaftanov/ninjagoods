@@ -7,6 +7,21 @@
           <span class="logo-icon">🌱</span>
           <span class="logo-text">Ninja Goods</span>
         </div>
+        <div class="nav-buttons">
+          <button class="nav-icon-button" @click="goToOrganizationManagement" title="Управление организацией">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+          <button class="nav-icon-button logout-button" @click="handleLogout" title="Выход">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -93,13 +108,17 @@
 
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCatalogStore } from '../stores/catalog'
 import { useCartStore } from '../stores/cart'
+import { useB2BAuthStore } from '../stores/b2bAuth'
 import FloatingCart from '../components/FloatingCart.vue'
 import type { Product } from '../types'
 
+const router = useRouter()
 const catalogStore = useCatalogStore()
 const cartStore = useCartStore()
+const b2bAuthStore = useB2BAuthStore()
 
 const allProducts = computed(() => catalogStore.products)
 
@@ -145,6 +164,15 @@ const decreaseQuantity = (product: Product) => {
   }
 }
 
+const goToOrganizationManagement = () => {
+  router.push('/organization/management')
+}
+
+const handleLogout = () => {
+  b2bAuthStore.logout()
+  router.push('/login')
+}
+
 onMounted(() => {
   loadData()
 })
@@ -176,7 +204,46 @@ onMounted(() => {
   padding: 0 60px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.nav-icon-button {
+  display: flex;
+  align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-icon-button svg {
+  width: 20px;
+  height: 20px;
+  color: #1C1C1E;
+}
+
+.nav-icon-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.logout-button svg {
+  color: #DC2626;
+}
+
+.logout-button:hover svg {
+  color: #B91C1C;
 }
 
 .logo {
@@ -190,6 +257,35 @@ onMounted(() => {
 
 .logo-icon {
   font-size: 24px;
+}
+
+.b2b-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.b2b-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.b2b-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+}
+
+.b2b-toggle:active {
+  transform: translateY(0);
 }
 
 .nav-menu {

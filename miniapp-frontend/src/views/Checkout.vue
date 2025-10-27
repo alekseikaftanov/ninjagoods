@@ -44,15 +44,46 @@
 
       <!-- Contact Info -->
       <div class="contact-info">
-        <h2>Контактная информация</h2>
-        <div class="form-group">
-          <label>Имя</label>
-          <input v-model="orderData.name" type="text" placeholder="Введите ваше имя" />
+        <h2>Информация о заказе</h2>
+        
+        <!-- Organization Info -->
+        <div v-if="organization" class="info-section">
+          <h3>Организация</h3>
+          <div class="info-row">
+            <span class="label">Название:</span>
+            <span class="value">{{ organization.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">ИНН:</span>
+            <span class="value">{{ organization.inn }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Адрес:</span>
+            <span class="value">{{ organization.address_actual }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Телефон:</span>
+            <span class="value">{{ organization.phone }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ organization.email }}</span>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Телефон</label>
-          <input v-model="orderData.phone" type="tel" placeholder="+7 (999) 123-45-67" />
+
+        <!-- User Info -->
+        <div v-if="user" class="info-section">
+          <h3>Контактное лицо</h3>
+          <div class="info-row">
+            <span class="label">ФИО:</span>
+            <span class="value">{{ user.first_name }} {{ user.last_name }}</span>
+          </div>
+          <div v-if="user.username" class="info-row">
+            <span class="label">Telegram:</span>
+            <span class="value">@{{ user.username }}</span>
+          </div>
         </div>
+
         <div class="form-group">
           <label>Комментарий к заказу</label>
           <textarea v-model="orderData.comment" placeholder="Дополнительные пожелания (необязательно)"></textarea>
@@ -69,26 +100,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
+import { useB2BAuthStore } from '../stores/b2bAuth'
+import { b2bAPI } from '../utils/b2bApi'
 import axios from 'axios'
 
 const router = useRouter()
 const cartStore = useCartStore()
+const b2bAuthStore = useB2BAuthStore()
+
+const user = computed(() => b2bAuthStore.user)
+const organization = ref(null)
 
 const orderData = ref({
-  name: '',
-  phone: '',
   comment: ''
 })
 
 const isSubmitting = ref(false)
 
 const canSubmit = computed(() => {
-  return orderData.value.name.trim() && 
-         orderData.value.phone.trim() && 
-         cartStore.totalItems > 0
+  return cartStore.totalItems > 0
 })
 
 const goBack = () => {
@@ -101,27 +134,25 @@ const submitOrder = async () => {
   isSubmitting.value = true
 
   try {
-    // Сначала создаем пользователя
-    const userResponse = await axios.post('http://localhost:8001/api/auth/telegram', {
-      telegram_id: `user_${Date.now()}`, // Временный ID для демо
-      name: orderData.value.name,
-      phone: orderData.value.phone
-    })
-
-    const userId = userResponse.data.user.id
-
-    // Затем создаем заказ
-    const orderResponse = await axios.post('http://localhost:8001/api/orders', {
-      user_id: userId,
-      items: cartStore.getOrderItems(),
-      comment: orderData.value.comment
-    })
+    // Create order using B2B API
+    const order = await b2bAPI.orders.create()
+    
+    // Add items to order
+    for (const item of cartStore.items) {
+      await b2bAPI.orders.addItem(order.id, {
+        product_id: item.product.id,
+        quantity: item.quantity,
+      })
+    }
+    
+    // Submit order
+    const submittedOrder = await b2bAPI.orders.submit(order.id)
 
     // Очищаем корзину
     cartStore.clearCart()
 
     // Показываем успех и возвращаемся
-    alert('Заказ успешно оформлен! Номер заказа: #' + orderResponse.data.data.id)
+    alert(`Заказ #${submittedOrder.id} успешно оформлен!`)
     router.push('/')
 
   } catch (error) {
@@ -131,6 +162,23 @@ const submitOrder = async () => {
     isSubmitting.value = false
   }
 }
+
+const loadOrganization = async () => {
+  if (!b2bAuthStore.hasOrganization) return
+  
+  try {
+    const response = await b2bAPI.organization.get()
+    if (response.success) {
+      organization.value = response.data
+    }
+  } catch (error) {
+    console.error('Failed to load organization:', error)
+  }
+}
+
+onMounted(() => {
+  loadOrganization()
+})
 </script>
 
 <style scoped>
@@ -280,6 +328,43 @@ const submitOrder = async () => {
   font-weight: 600;
   color: #1C1C1E;
   margin: 0 0 20px 0;
+}
+
+.info-section {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.info-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.info-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1C1C1E;
+  margin: 0 0 16px 0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.info-row .label {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.info-row .value {
+  font-size: 14px;
+  color: #1C1C1E;
+  font-weight: 600;
+  text-align: right;
 }
 
 .form-group {

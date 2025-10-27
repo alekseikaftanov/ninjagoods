@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'api.logger' => \App\Http\Middleware\ApiLogger::class,
             'error.logger' => \App\Http\Middleware\ErrorLogger::class,
+            'jwt.auth' => \App\Http\Middleware\JWTAuth::class,
+            'role' => \App\Http\Middleware\Role::class,
         ]);
 
         $middleware->web(append: [
