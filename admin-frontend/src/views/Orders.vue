@@ -228,7 +228,12 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>Заказ #{{ selectedOrder.id }}</h3>
-          <button @click="closeModal" class="btn-close">×</button>
+          <button @click="closeModal" class="btn-close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         
         <div class="modal-body">
@@ -832,51 +837,84 @@ const getUserPhone = (order: Order): string => {
   justify-content: center;
   z-index: 2000;
   padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
-  background: white;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
   max-width: 600px;
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-header {
-  padding: 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 32px;
+  border-bottom: 1px solid rgba(60, 60, 67, 0.29);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .modal-header h3 {
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 600;
   color: #1C1C1E;
   margin: 0;
+  line-height: 1.4;
 }
 
 .btn-close {
   background: none;
   border: none;
-  font-size: 24px;
-  color: #8E8E93;
+  color: rgba(60, 60, 67, 0.6);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-close:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #1C1C1E;
+  background: rgba(60, 60, 67, 0.1);
+  color: rgba(60, 60, 67, 1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  transform: scale(1.05);
+}
+
+.btn-close svg {
+  width: 16px;
+  height: 16px;
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 32px;
 }
 
 .detail-section {
@@ -884,10 +922,12 @@ const getUserPhone = (order: Order): string => {
 }
 
 .detail-section h4 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 400;
   color: #1C1C1E;
   margin: 0 0 16px 0;
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
 }
 
 .detail-grid {
@@ -903,13 +943,19 @@ const getUserPhone = (order: Order): string => {
 }
 
 .detail-item label {
-  font-weight: 500;
-  color: #6B7280;
+  font-weight: 400;
+  color: rgba(60, 60, 67, 0.6);
+  font-size: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.6;
 }
 
 .detail-item span {
   color: #1C1C1E;
-  font-weight: 500;
+  font-weight: 400;
+  font-size: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.6;
 }
 
 .order-items-list {
@@ -932,21 +978,29 @@ const getUserPhone = (order: Order): string => {
 }
 
 .item-name {
-  font-weight: 500;
+  font-weight: 400;
   color: #1C1C1E;
   margin-bottom: 4px;
+  font-size: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.6;
 }
 
 .item-details {
   display: flex;
   gap: 12px;
-  font-size: 12px;
-  color: #6B7280;
+  font-size: 15px;
+  color: rgba(60, 60, 67, 0.6);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.6;
 }
 
 .item-total {
   font-weight: 600;
   color: #1C1C1E;
+  font-size: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.6;
 }
 
 .total-summary {
@@ -959,17 +1013,21 @@ const getUserPhone = (order: Order): string => {
   display: flex;
   justify-content: space-between;
   margin-bottom: 8px;
-  font-size: 14px;
-  color: #6B7280;
+  font-size: 15px;
+  color: rgba(60, 60, 67, 0.6);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.6;
 }
 
 .total-line.final {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: #1C1C1E;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(60, 60, 67, 0.29);
   padding-top: 12px;
   margin-top: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.6;
 }
 
 /* Responsive */
